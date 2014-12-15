@@ -2,7 +2,7 @@
 
 DDO-ML is a fast, lightweight game launcher I built using <em><strong>Python </strong>(networking)</em> and <em><strong>AutoIt3 </strong>(GUI)</em>.  It solves a few of the problems associated with the official game launcher as well as provides additional functionality, such as password saving/encryption and multi-box support.  
 
-<a href="http://traversching.files.wordpress.com/2014/06/ddo-ml_21.png"><img src="http://traversching.files.wordpress.com/2014/06/ddo-ml_21.png?w=250" alt="ddo-ml_2" width="250" height="300" class="aligncenter size-medium wp-image-87" /></a>
+<a href="https://raw.githubusercontent.com/traversc/DDO-ML/master/ddo-ml_21.png"><img src="https://raw.githubusercontent.com/traversc/DDO-ML/master/ddo-ml_21.png" alt="ddo-ml_2" width="250" height="300" class="aligncenter size-medium wp-image-87" /></a>
 
 <em>Cross-post here: https://www.ddo.com/forums/showthread.php/436296-DDO-ML-an-ultrafast-lightweight-DDO-launcher</em>
 

@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<root>
+	<shortcut label="Acc1">
+		<account user="Acc1">
+			<pass value="" encrypted_value="DC443528E75E87353D6E5FFC82427558"></pass>
+			<rename value="DDO_acc1"></rename>
+			<character value="ToonName"></character>
+			<subscription value="SubName"></subscription>
+		</account>
+	</shortcut>
+	<shortcut label="Acc2">
+		<account user="Acc2">
+			<pass value="" encrypted_value="12FBAE1DA9BE44CF7C47A9B8522D8F12"></pass>
+			<rename value="DDO_acc2"></rename>
+			<character value=""></character>
+		</account>
+	</shortcut>
+	<shortcut label="Acc1 and Acc2">
+		<account user="Acc1">
+			<pass value="" encrypted_value="B583887174CA4124FD06BD2917596B87"></pass>
+			<rename value="DDO_acc1"></rename>
+			<character value=""></character>
+		</account>
+		<account user="Acc2">
+			<pass value="" encrypted_value="45AB4261FC807720517637B1796B666C"></pass>
+			<rename value="DDO_acc2"></rename>
+			<character value=""></character>
+		</account>
+	</shortcut>
+</root>

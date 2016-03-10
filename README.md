@@ -6,13 +6,14 @@ DDO-ML is a fast, lightweight game launcher I built using <em><strong>Python </s
 
 <em>Cross-post here: https://www.ddo.com/forums/showthread.php/436296-DDO-ML-an-ultrafast-lightweight-DDO-launcher</em>
 
-version 1.2<br>
-3/26/14
+version 1.3<br>
+3/9/2016
 
 <b>Overview:</b>
-This is a small GUI interace similar to PyLotro. It is derived from an excellent command line Python Launcher by Kahath, which you can find <a href="https://www.ddo.com/forums/showthread.php/382010-How-to-launch-DDO-from-command-line">here</a>. Several people including myself have been using this for quite a while, and I have generally recieved positive feedback. So I'd like to make it available to everyone. 
+This is a small GUI interace similar to PyLotro. It is derived from an excellent command line Python Launcher by Kahath, which you can find <a href="https://www.ddo.com/forums/showthread.php/382010-How-to-launch-DDO-from-command-line">here</a>.
 
 <b>Updates:</b><br>
+Ver 1.3 - TLSv1 protocol update for data-center move.  Minor fixes.  
 Ver 1.2 - NOTE: You will need to re-encrypt your passwords if moving the XML file from 1.11 to 1.2. 
 Fixed issue with reserved characters (e.g. hypens) in account/passwords (probably)
 Added option to choose subscription. See the example XML file.
@@ -52,5 +53,10 @@ Open up ddo-ml.exe. On the first run, it'll ask you to locate your DDO folder. D
 <b>Source code:</b>
 Source code is included if you want to make changes and compile it yourself. However, please do NOT widely distribute a modified executable without my permission. To build DDO-ML, you will need the following:
 Python for windows<br>
-CxFreeze (to create windows executable wrapper for python scripts)<br>
+CxFreeze or pyinstaller (to create windows executable wrapper for python scripts)<br>
+
+Instructions for pyinstaller:
+1) Download and install Python 3.5, Visual Studio 2015 (with C++ support) and pip install pyinstaller
+2) run pyinstaller --win-private-assemblies --win-no-prefer-redirects ddolauncher.py
+
 AutoIt (GUI interface)<br>

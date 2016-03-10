@@ -40,7 +40,7 @@ import xml.etree.ElementTree as ElementTree
 iswine = 0
 # Output for DDO to use. DDO binds to this address so using the same port again
 # will cause DDO to fail.
-#outport = 5201
+outport = 5201
 
 # From: http://bugs.python.org/issue11220
 class HTTPSConnectionV3(HTTPSConnection):
@@ -53,7 +53,7 @@ class HTTPSConnectionV3(HTTPSConnection):
             self.sock = sock
             self._tunnel()
         try:
-            self.sock = ssl.wrap_socket(sock, self.key_file, self.cert_file, ssl_version=ssl.PROTOCOL_SSLv3)
+            self.sock = ssl.wrap_socket(sock, self.key_file, self.cert_file, ssl_version=ssl.PROTOCOL_TLSv1)
         except ssl.SSLError as e:
             self.sock = ssl.wrap_socket(sock, self.key_file, self.cert_file, ssl_version=ssl.PROTOCOL_SSLv23)
 
@@ -207,7 +207,7 @@ def login(authserver, world, username, password, subscription):
     u = urlparse(authserver)
     c = HTTPSConnectionV3(u.netloc, 443)
     c.putrequest("POST", u.path)
-    c.putheader("Content-type: text/xml; charset=utf-8")
+    c.putheader("Content-type", "text/xml; charset=utf-8")
     c.putheader("SOAPAction", "http://www.turbine.com/SE/GLS/LoginAccount")
     c.putheader("Content-Length", str(len(xml)))
     c.endheaders()
@@ -284,7 +284,7 @@ def version():
 
 def run_ddo(gamedir, username, ticket, language, world):
     global iswine
-    #global outport
+    global outport
     chdir(gamedir)
 
     params = ["-h", world['host'],
@@ -292,7 +292,8 @@ def run_ddo(gamedir, username, ticket, language, world):
               "--glsticketdirect", ticket,
               "--chatserver", '"' + world['chat'] + '"',
               "--language", language,
-              "--rodat", "on", #"--outport", str(outport),
+              "--rodat", "on",
+              "--outport", str(outport),
               "--gametype", "DDO",
               "--supporturl", '"https://tss.turbine.com/TSSTrowser/trowser.aspx"',
               "--supportserviceurl", '"https://tss.turbine.com/TSSTrowser/SubmitTicket.asmx"',

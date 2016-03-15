@@ -21,22 +21,39 @@ Opt("GUIOnEventMode", 1)
 $background_launch = 0
 $gui = 0
 $patch_gui = 0
+$lamannia_patch_gui = 0
 
 $login_timeout = 1200000
+
+$default_folder = IniRead($ini_file, "startup", "directory", "C:\\Program Files (x86)\\Turbine\\DDO Unlimited")
+$default_server = IniRead($ini_file, "startup", "server", "khyber")
+$lamannia_folder = IniRead($ini_file, "startup", "lamannia_directory", "")
+
+$debug = IniRead($ini_file, "startup", "debug", "0")
 
 $set_directory_item = TrayCreateItem("Set Directory")
 TrayItemSetOnEvent(-1, "set_directory")
 Func set_directory()
-	IniWrite($ini_file, "Startup", "directory", stringReplace(FileSelectFolder("Locate DDO Folder", ""), "\","\\"))
+	$default_folder = stringReplace(FileSelectFolder("Locate DDO Folder", $default_folder), "\","\\")
+	IniWrite($ini_file, "Startup", "directory", $default_folder)
 	TrayItemSetState($set_directory_item, $TRAY_UNCHECKED)
 EndFunc   ;==>set_directory
 
 $set_server_item = TrayCreateItem("Set Server")
 TrayItemSetOnEvent(-1, "set_server")
 Func set_server()
-	IniWrite($ini_file, "Startup", "server", InputBox("Question", "Choose Server:", "khyber", ""))
+	$default_server = InputBox("Question", "Choose Server:", "khyber", "")
+	IniWrite($ini_file, "Startup", "server", $default_server)
 	TrayItemSetState($set_server_item, $TRAY_UNCHECKED)
 EndFunc   ;==>set_server
+
+$set_lamannia_directory_item = TrayCreateItem("Set Lamannia Directory")
+TrayItemSetOnEvent(-1, "set_lamannia_directory")
+Func set_lamannia_directory()
+	$lamannia_folder = stringReplace(FileSelectFolder("Locate Lamannia Folder", $lamannia_folder), "\","\\")
+	IniWrite($ini_file, "Startup", "lamannia_directory", $lamannia_folder)
+	TrayItemSetState($set_lamannia_directory_item, $TRAY_UNCHECKED)
+EndFunc   ;==>set_lamannia_directory
 
 $background_launch_item = TrayCreateItem("Background Launch")
 TrayItemSetOnEvent(-1, "set_background_launch")
@@ -96,10 +113,6 @@ If IniRead($ini_file, "startup", "firstlaunch", "1") == 1 Then
 	set_directory()
 	set_server()
 EndIf
-$ddo_folder = IniRead($ini_file, "startup", "directory", "C:\\Program Files (x86)\\Turbine\\DDO Unlimited")
-$server = IniRead($ini_file, "startup", "server", "khyber")
-
-$debug = IniRead($ini_file, "startup", "debug", "0")
 
 If _XMLFileOpen($xml_file) == -1 Then
 	_XMLCreateFile($xml_file, "root", False)
@@ -137,6 +150,9 @@ GUICtrlSetOnEvent(-1, "close_background")
 $close_item = GUICtrlCreateListViewItem("(Patch Game)", $sList)
 GUICtrlSetOnEvent(-1, "patch_game")
 
+$close_item = GUICtrlCreateListViewItem("(Patch Lamannia)", $sList)
+GUICtrlSetOnEvent(-1, "patch_lamannia")
+
 GUISetOnEvent($GUI_EVENT_CLOSE, "_exit")
 GUISetState(@SW_SHOW)
 
@@ -160,6 +176,8 @@ While 1
 WEnd
 
 Func launch()
+	$ddo_folder = $default_folder
+	$server = $default_server
 	$shortcut = _GUICtrlListView_GetItemTextString($sList)
 	_GUICtrlListView_SetColumn($sList, 0, "Start... " & $shortcut)
 	$i = 0
@@ -188,6 +206,17 @@ Func launch()
 		   $pass = binarytostring($pass)
 		   ;consolewrite($pass)
 		EndIf
+
+		$xml_server = _XMLGetattrib("shortcut[" & $i & "]/account[" & $acc & "]/server", "value")
+		If $xml_server <> "" And $xml_server <> -1 Then
+			$server = $xml_server
+		EndIf
+
+		$xml_directory = _XMLGetattrib("shortcut[" & $i & "]/account[" & $acc & "]/directory", "value")
+		If $xml_directory <> "" And $xml_directory <> -1 Then
+			$ddo_folder = $xml_directory
+		EndIf
+
 		$rename[$acc - 1] = _xmlGetattrib("shortcut[" & $i & "]/account[" & $acc & "]/rename", "value")
 		$character[$acc - 1] = _xmlGetattrib("shortcut[" & $i & "]/account[" & $acc & "]/character", "value")
 		$tempstring = 'ddolauncher.exe' & ' -s ' & $server & ' -g "' & $ddo_folder & '" -u "' & $user & '" -a "' & $pass & '" -z "' & $subscription & '"'
@@ -261,13 +290,22 @@ EndFunc   ;==>close_background
 Func _deletepatchgui()
 	GUIDelete($patch_gui)
 EndFunc
+
+Func _deletelamanniapatchgui()
+	GUIDelete($lamannia_patch_gui)
+EndFunc
+
 Func patch_game()
 	$patch_gui = GuiCreate("Patch Window", 400,300)
 	$patch_edit = GuiCtrlCreateEdit("",0,0,400,300)
 	GUISetState(@SW_SHOW)
-	;$py_handle = Run("ddolauncher.exe -p -g " & $ddo_folder)
+	;$py_handle = Run("ddolauncher.exe -p -g " & $default_folder)
 	GUICtrlSetData($patch_edit, @CRLF & "***Starting Patch Process***")
-	$py_handle = Run(@ComSpec & ' /c ddolauncher.exe -p -g "' & $ddo_folder & '"',@workingdir,@sw_hide,0x6)
+	$tempstring = 'ddolauncher.exe -p -g "' & $default_folder & '"'
+	if $debug == 1 Then
+		_FileWriteLog ( "debug.txt", $tempstring )
+	EndIf
+	$py_handle = Run(@ComSpec & ' /c ' & $tempstring,@workingdir,@sw_hide,0x6)
 	While 1
 		$patch_text = StdoutRead($py_handle)
 		If @error Then ExitLoop
@@ -278,21 +316,47 @@ Func patch_game()
 	GUISetOnEvent($GUI_EVENT_CLOSE, "_deletepatchgui")
 EndFunc
 
+Func patch_lamannia()
+	If $lamannia_folder == "" Or $lamannia_folder == -1 Then
+		$lamannia_folder = "C:\\Program Files (x86)\\Turbine\\DDO Unlimited - Lamannia"
+		set_lamannia_directory()
+	EndIf
+
+	$lamannia_patch_gui = GuiCreate("Lamannia Patch Window", 400,300)
+	$patch_edit = GuiCtrlCreateEdit("",0,0,400,300)
+	GUISetState(@SW_SHOW)
+	;$py_handle = Run("ddolauncher.exe -p -g " & $lamannia_folder)
+	GUICtrlSetData($patch_edit, @CRLF & "***Starting Patch Process***")
+	$tempstring = 'ddolauncher.exe -p -g "' & $lamannia_folder & '"'
+	if $debug == 1 Then
+		_FileWriteLog ( "debug.txt", $tempstring )
+	EndIf
+	$py_handle = Run(@ComSpec & ' /c ' & $tempstring,@workingdir,@sw_hide,0x6)
+	While 1
+		$patch_text = StdoutRead($py_handle)
+		If @error Then ExitLoop
+		sleep(1000)
+		GUICtrlSetData($patch_edit, @CRLF & $patch_text & "..." & GUICtrlRead($patch_edit))
+	WEnd
+	GUICtrlSetData($patch_edit,"***DONE***" & @CRLF & GUICtrlRead($patch_edit))
+	GUISetOnEvent($GUI_EVENT_CLOSE, "_deletelamanniapatchgui")
+EndFunc
+
 Func delete_Awesomium()
 	;make backup if DNE
-	DirRemove( $ddo_folder & "\AwesomiumProcess.exe" )
-	if(FileExists ( $ddo_folder & "\AwesomiumProcess.exe" )) Then
-		FileCopy($ddo_folder & "\AwesomiumProcess.exe",$ddo_folder & "\AwesomiumProcess.bak") ;should not overwrite if exists
-		FileDelete( $ddo_folder & "\AwesomiumProcess.exe" )
+	DirRemove( $default_folder & "\AwesomiumProcess.exe" )
+	if(FileExists ( $default_folder & "\AwesomiumProcess.exe" )) Then
+		FileCopy($default_folder & "\AwesomiumProcess.exe",$default_folder & "\AwesomiumProcess.bak") ;should not overwrite if exists
+		FileDelete( $default_folder & "\AwesomiumProcess.exe" )
 	EndIf
 	;delete
 EndFunc
 
 Func restore_Awesomium()
 	;restore from backup
-	DirRemove( $ddo_folder & "\AwesomiumProcess.exe" )
-	if(FileExists ( $ddo_folder & "\AwesomiumProcess.bak" )) Then
-		FileCopy($ddo_folder & "\AwesomiumProcess.bak",$ddo_folder & "\AwesomiumProcess.exe") ;should not overwrite if exists
+	DirRemove( $default_folder & "\AwesomiumProcess.exe" )
+	if(FileExists ( $default_folder & "\AwesomiumProcess.bak" )) Then
+		FileCopy($default_folder & "\AwesomiumProcess.bak",$default_folder & "\AwesomiumProcess.exe") ;should not overwrite if exists
 	EndIf
 EndFunc
 
@@ -302,7 +366,6 @@ Func kill_Awesomium()
 		ProcessClose("AwesomiumProcess.exe")
 	WEnd
 EndFunc
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -362,8 +425,6 @@ Func _ProcessGetHWnd($iPid, $iOption = 1, $sTitle = "", $iTimeout = 2000)
 	SetError(1)
 	Return 0
 EndFunc   ;==>_ProcessGetHWnd
-
-
 
 ;;;;encryption stuff
 

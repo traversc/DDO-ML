@@ -27,4 +27,13 @@
 			<character value=""></character>
 		</account>
 	</shortcut>
+	<shortcut label="Lamannia">
+		<account user="Acc1">
+			<pass value="" encrypted_value="DC443528E75E87353D6E5FFC82427558"></pass>
+			<server value="Lamannia"></server>
+			<rename value="DDO_Lamannia"></rename>
+			<character value=""></character>
+			<directory value="G:\\DDO - Lamannia"/>
+		</account>
+	</shortcut>
 </root>

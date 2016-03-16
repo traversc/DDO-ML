@@ -6,7 +6,7 @@ DDO-ML is a fast, lightweight game launcher I built using <em><strong>Python </s
 
 <em>Cross-post here: https://www.ddo.com/forums/showthread.php/436296-DDO-ML-an-ultrafast-lightweight-DDO-launcher</em>
 
-version 1.3<br>
+version 1.4<br>
 3/9/2016
 
 <b>Overview:</b>
@@ -14,7 +14,9 @@ This is a small GUI interace similar to PyLotro. It is derived from an excellent
 
 <b>Updates:</b><br>
 Ver 1.4 - Additional functionality and bug fixes by MIvanIsten.
+
 Ver 1.3 - TLSv1 protocol update for data-center move.  Minor fixes.  
+
 Ver 1.2 - NOTE: You will need to re-encrypt your passwords if moving the XML file from 1.11 to 1.2. 
 Fixed issue with reserved characters (e.g. hypens) in account/passwords (probably)
 Added option to choose subscription. See the example XML file.

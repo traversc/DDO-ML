@@ -293,7 +293,7 @@ def run_ddo(gamedir, username, ticket, language, world):
               "--chatserver", '"' + world['chat'] + '"',
               "--language", language,
               "--rodat", "on",
-#              "--outport", str(outport),
+              "--outport", str(outport),
               "--gametype", "DDO",
               "--supporturl", '"https://tss.turbine.com/TSSTrowser/trowser.aspx"',
               "--supportserviceurl", '"https://tss.turbine.com/TSSTrowser/SubmitTicket.asmx"',

@@ -754,7 +754,7 @@ Func _XMLCreateCDATA($strNode, $strCDATA, $strNameSpc = "")
 	EndIf
 	Local $objChild, $objNode
 	$objNode = $objDoc.createNode ($NODE_ELEMENT, $strNode, $strNameSpc)
-	If IsObj($objNode) Then
+	If IsObj($objNode)Then
 		If Not ($objNode.hasChildNodes ()) Then
 			_AddFormat($objDoc, $objNode)
 		EndIf

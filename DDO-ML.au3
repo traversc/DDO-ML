@@ -28,7 +28,7 @@ $login_timeout = 1200000
 $default_folder = IniRead($ini_file, "startup", "directory", "C:\\Program Files (x86)\\Turbine\\DDO Unlimited")
 $default_server = IniRead($ini_file, "startup", "server", "khyber")
 $lamannia_folder = IniRead($ini_file, "startup", "lamannia_directory", "")
-
+$preload = IniRead($ini_file, "startup", "usepreloader", "0")
 $debug = IniRead($ini_file, "startup", "debug", "0")
 
 $set_directory_item = TrayCreateItem("Set Directory")
@@ -54,6 +54,23 @@ Func set_lamannia_directory()
 	IniWrite($ini_file, "Startup", "lamannia_directory", $lamannia_folder)
 	TrayItemSetState($set_lamannia_directory_item, $TRAY_UNCHECKED)
 EndFunc   ;==>set_lamannia_directory
+
+$set_preload_item = TrayCreateItem("Use Preloader")
+TrayItemSetOnEvent(-1, "set_preload")
+if $preload == 1 Then
+	TrayItemSetState($set_preload_item,$TRAY_CHECKED)
+EndIf
+Func set_preload()
+    If BitAND(TrayItemGetState($set_preload_item), $TRAY_CHECKED) = $TRAY_CHECKED Then
+		TrayItemSetState($set_preload_item, $TRAY_UNCHECKED)
+		$preload = 0
+    Else
+        TrayItemSetState($set_preload_item, $TRAY_CHECKED)
+		$preload = 1
+    EndIf
+	IniWrite($ini_file, "Startup", "usepreloader", $preload)
+	; TrayItemSetState($set_preload_item, $TRAY_UNCHECKED)
+EndFunc   ;==>set_preload
 
 $background_launch_item = TrayCreateItem("Background Launch")
 TrayItemSetOnEvent(-1, "set_background_launch")
@@ -257,6 +274,11 @@ Func launch()
 		Else
 			If $character[$acc - 1] <> "" Then
 				$py_out[$acc - 1]  = $py_out[$acc - 1]  & " -u " & $character[$acc - 1]
+			EndIf
+			If $preload == 1 Then
+				_GUICtrlListView_SetColumn($sList, 0, "Preloading ...")
+				; _FileWriteLog ( "debug.txt", "preload.exe" & ' "' & $ddo_folder & "\\client_general.dat" & '"'& ' "' & $ddo_folder & "\\client_gamelogic.dat" & '"')
+				RunWait("preload.exe" & ' "' & $ddo_folder & "\\client_general.dat" & '"'& ' "' & $ddo_folder & "\\client_gamelogic.dat" & '"', @workingdir, @sw_hide)
 			EndIf
 			_GUICtrlListView_SetColumn($sList, 0, "Launching client " & $user)
 			$pid = Run($ddo_folder & "\\" & $py_out[$acc - 1], $ddo_folder)

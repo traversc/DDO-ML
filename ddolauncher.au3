@@ -3,8 +3,7 @@
 #AutoIt3Wrapper_Change2CUI=y
 #AutoIt3Wrapper_Res_Comment=Original: Copyright 2012 by Florian Stinglmayr (Website: http://github/n0la/ddolauncher)
 #AutoIt3Wrapper_Res_Description=An alternate DDO launcher
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.2
-#AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.3
 #AutoIt3Wrapper_Res_LegalCopyright=AutoIt port from Python by: MIvanIsten (https://github.com/MIvanIsten)
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 #include <File.au3>
@@ -199,6 +198,7 @@ Func join_queue($name, $ticket, $world, $LoginQueueURL)
 	$oXML = _CreateMSXMLObj(1)
 
 	While True
+		$oXML.setOption(2, 13056)
 		$oXML.Open("POST", $LoginQueueURL, False)
 		$oXML.SetRequestHeader("Content-Type", "text/xml; charset=utf-8")
 		$oXML.SetRequestHeader("Content-Length", StringLen($params))
@@ -243,40 +243,38 @@ Func login($authserver, $world, $username, $password, $subscription, $gamename, 
 		'</soap:Envelope>'
 
 	$oXML = _CreateMSXMLObj(1)
+	$oXML.setOption(2, 13056)
 	$oXML.Open("POST", $authserver, False)
 	$oXML.SetRequestHeader("Content-Type", "text/xml; charset=utf-8")
 	$oXML.SetRequestHeader("SOAPAction", "http://www.turbine.com/SE/GLS/LoginAccount")
 	$oXML.SetRequestHeader("Content-Length", StringLen($xml))
 	$oXML.Send($xml)
-	$oStatusCode = $oXML.status
 
+	$oStatusCode = $oXML.status
 	If $oStatusCode <> 200 Then
 		ConsoleWrite("HTTP post failed." & @CRLF)
 	Else
 		$oReceived = $oXML.responseXML
-		$namespaceURI = $oReceived.selectSingleNode("//soap:Body/*").namespaceURI
-		$oReceived.setProperty("SelectionNamespaces", "xmlns:gls='" & $namespaceURI & "'")
-		$LoginAccountResult = $oReceived.selectSingleNode("//gls:LoginAccountResponse/LoginAccountResult")
-		$ticket = $LoginAccountResult.selectSingleNode('Ticket').text
-	EndIf
+		$ticket = $oReceived.selectSingleNode('//Ticket').text
 
-	For $game_sub In $LoginAccountResult.selectNodes('//Subscriptions/GameSubscription')
-		If $subscription == "" Then
-			$sub_info = $game_sub.selectSingleNode('Game')
-			If StringLower($sub_info.text) == StringLower($gamename) Then
-				$found_ddo = True
+		For $game_sub In $oReceived.selectNodes('//Subscriptions/GameSubscription')
+			If $subscription == "" Then
+				$sub_info = $game_sub.selectSingleNode('Game')
+				If StringLower($sub_info.text) == StringLower($gamename) Then
+					$found_ddo = True
+				EndIf
+			Else
+				$sub_info = $game_sub.selectSingleNode('Description')
+				If StringLower($sub_info.text) == StringLower($subscription) Then
+					$found_ddo = True
+				EndIf
 			EndIf
-		Else
-			$sub_info = $game_sub.selectSingleNode('Description')
-			If StringLower($sub_info.text) == StringLower($subscription) Then
-				$found_ddo = True
+			If $found_ddo == True Then
+				$account = $game_sub.selectSingleNode('Name').text
+				ExitLoop
 			EndIf
-		EndIf
-		If $found_ddo == True Then
-			$account = $game_sub.selectSingleNode('Name').text
-			ExitLoop
-		EndIf
-	Next
+		Next
+	EndIf
 
 	If $found_ddo == False Then
 		ConsoleWrite("Unable to find a subscription on your account for DDO. Your LotrO account?" & @CRLF)
@@ -389,9 +387,7 @@ Func query_worlds($url, $gamename)
 
 	If $oStatusCode = 200 Then
 		$oReceived = $oXML.responseXML
-		$namespaceURI = $oReceived.selectSingleNode("//soap:Body/*").namespaceURI
-		$oReceived.setProperty("SelectionNamespaces", "xmlns:gls='" & $namespaceURI & "'")
-		$datacenters = $oReceived.selectNodes("//gls:GetDatacentersResult/*")
+		$datacenters = $oReceived.selectNodes("//GetDatacentersResult/*")
 		For $dc In $datacenters
 			If $gamename == $dc.selectSingleNode("Name").text Then
 				$config[0] = $dc.selectSingleNode('AuthServer').text
@@ -454,7 +450,7 @@ Func _CreateMSXMLObj($mode) ; Creates a MSXML instance depending on the version 
 				EndIf
 			EndIf
 		Case 1		; for remote file
-			$xmlObj = ObjCreate("Msxml2.XMLHTTP.3.0")
+			$xmlObj = ObjCreate("Msxml2.ServerXMLHTTP")
 			If Not IsObj($xmlObj) Then
 				Return Null
 			EndIf

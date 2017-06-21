@@ -1,10 +1,17 @@
+#cs
+	[FileVersion]
+#ce
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
+#AutoIt3Wrapper_Icon=icon.ico
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Change2CUI=y
+#AutoIt3Wrapper_Res_Field=ProductName|DDO-ML
 #AutoIt3Wrapper_Res_Comment=Original: Copyright 2012 by Florian Stinglmayr (Website: http://github/n0la/ddolauncher)
 #AutoIt3Wrapper_Res_Description=An alternate DDO launcher
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.3
+#AutoIt3Wrapper_Res_Fileversion=1.0.1.0
 #AutoIt3Wrapper_Res_LegalCopyright=AutoIt port from Python by: MIvanIsten (https://github.com/MIvanIsten)
+#AutoIt3Wrapper_Run_Au3Stripper=y
+#Au3Stripper_Parameters=/rsln /mo
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 #include <File.au3>
 
@@ -12,8 +19,8 @@ $debug = 0
 $server = ""
 $language = "English"
 $subscription = ""
-$user=""
-$pass=""
+$user = ""
+$pass = ""
 $listservers = 0
 $patch = 0
 $ddogamedir = ""
@@ -24,13 +31,13 @@ If $CmdLine[0] > 0 Then
 	For $i = 1 To $CmdLine[0]
 		Select
 			Case $CmdLine[$i] == "-g" Or $CmdLine[$i] == "--game-path"
-				$i=$i+1
+				$i = $i + 1
 				$ddogamedir = $CmdLine[$i]
 			Case $CmdLine[$i] == "-u" Or $CmdLine[$i] == "--user"
-				$i=$i+1
+				$i = $i + 1
 				$user = $CmdLine[$i]
 			Case $CmdLine[$i] == "-a" Or $CmdLine[$i] == "--pass"
-				$i=$i+1
+				$i = $i + 1
 				$pass = $CmdLine[$i]
 			Case $CmdLine[$i] == "-h" Or $CmdLine[$i] == "--help"
 				Usage()
@@ -40,10 +47,10 @@ If $CmdLine[0] > 0 Then
 			Case $CmdLine[$i] == "-p" Or $CmdLine[$i] == "--patch"
 				$patch = 1
 			Case $CmdLine[$i] == "-s" Or $CmdLine[$i] == "--server"
-				$i=$i+1
+				$i = $i + 1
 				$server = $CmdLine[$i]
 			Case $CmdLine[$i] == "-z" Or $CmdLine[$i] == "--subscription"
-				$i=$i+1
+				$i = $i + 1
 				$subscription = $CmdLine[$i]
 			Case $CmdLine[$i] == "-v" Or $CmdLine[$i] == "--version"
 				Version()
@@ -51,7 +58,7 @@ If $CmdLine[0] > 0 Then
 			Case $CmdLine[$i] == "-o" Or $CmdLine[$i] == "--out-port"
 				$outport = 1
 		EndSelect
-   Next
+	Next
 EndIf
 
 If $ddogamedir == "" Then
@@ -87,21 +94,21 @@ EndIf
 $LoginQueueURL = query_queue_url($configserver)
 
 If $debug == 1 Then
-	_FileWriteLog("ddolauncher.txt","ddogamedir: " & $ddogamedir & @CRLF)
-	_FileWriteLog("ddolauncher.txt","exe: " & $exe & @CRLF)
-	_FileWriteLog("ddolauncher.txt","user: " & $user & @CRLF)
-	_FileWriteLog("ddolauncher.txt","pass: " & $pass & @CRLF)
-	_FileWriteLog("ddolauncher.txt","listservers: " & $listservers & @CRLF)
-	_FileWriteLog("ddolauncher.txt","patch: " & $patch & @CRLF)
-	_FileWriteLog("ddolauncher.txt","server: " & $server & @CRLF)
-	_FileWriteLog("ddolauncher.txt","subscription: " & $subscription & @CRLF)
-	_FileWriteLog("ddolauncher.txt","outport: " & $outport & @CRLF)
-	_FileWriteLog("ddolauncher.txt","datacenter: " & $datacenter & @CRLF)
-	_FileWriteLog("ddolauncher.txt","gamename: " & $gamename & @CRLF)
-	_FileWriteLog("ddolauncher.txt","$authserver: " & $authserver & @CRLF)
-	_FileWriteLog("ddolauncher.txt","$patchserver: " & $patchserver & @CRLF)
-	_FileWriteLog("ddolauncher.txt","$configserver: " & $configserver & @CRLF)
-	_FileWriteLog("ddolauncher.txt","$LoginQueueURL: " & $LoginQueueURL & @CRLF)
+	_FileWriteLog("ddolauncher.txt", "ddogamedir: " & $ddogamedir & @CRLF)
+	_FileWriteLog("ddolauncher.txt", "exe: " & $exe & @CRLF)
+	_FileWriteLog("ddolauncher.txt", "user: " & $user & @CRLF)
+	_FileWriteLog("ddolauncher.txt", "pass: " & $pass & @CRLF)
+	_FileWriteLog("ddolauncher.txt", "listservers: " & $listservers & @CRLF)
+	_FileWriteLog("ddolauncher.txt", "patch: " & $patch & @CRLF)
+	_FileWriteLog("ddolauncher.txt", "server: " & $server & @CRLF)
+	_FileWriteLog("ddolauncher.txt", "subscription: " & $subscription & @CRLF)
+	_FileWriteLog("ddolauncher.txt", "outport: " & $outport & @CRLF)
+	_FileWriteLog("ddolauncher.txt", "datacenter: " & $datacenter & @CRLF)
+	_FileWriteLog("ddolauncher.txt", "gamename: " & $gamename & @CRLF)
+	_FileWriteLog("ddolauncher.txt", "$authserver: " & $authserver & @CRLF)
+	_FileWriteLog("ddolauncher.txt", "$patchserver: " & $patchserver & @CRLF)
+	_FileWriteLog("ddolauncher.txt", "$configserver: " & $configserver & @CRLF)
+	_FileWriteLog("ddolauncher.txt", "$LoginQueueURL: " & $LoginQueueURL & @CRLF)
 EndIf
 
 If $patch == 1 Then
@@ -115,7 +122,7 @@ If $listservers == 1 Then
 	ConsoleWrite('Patch server:' & $patchserver & @CRLF)
 	ConsoleWrite('Config server:' & $configserver & @CRLF)
 	ConsoleWrite('LoginQueue.URL:' & $LoginQueueURL & @CRLF)
-	for $gw in $worlds
+	For $gw In $worlds
 		ConsoleWrite('Server "' & $gw[0] & '"' & @CRLF)
 		ConsoleWrite(" Login server:" & $gw[1] & @CRLF)
 		ConsoleWrite(" Chat server:" & $gw[2] & @CRLF)
@@ -158,6 +165,14 @@ EndIf
 ;===============================================================================
 ;===============================================================================
 
+Func _GetVersion()
+	If @Compiled Then
+		Return FileGetVersion(@AutoItExe)
+	Else
+		Return IniRead(@ScriptFullPath, "FileVersion", "#AutoIt3Wrapper_Res_Fileversion", "0.0.0.0")
+	EndIf
+EndFunc   ;==>_GetVersion
+
 Func run_ddo($gamedir, $username, $ticket, $language, $world, $gamename, $authserver, $outport)
 	Local $params[0]
 
@@ -179,7 +194,7 @@ Func run_ddo($gamedir, $username, $ticket, $language, $world, $gamename, $authse
 	_ArrayAdd($params, "--supporturl")
 	_ArrayAdd($params, '"https://tss.turbine.com/TSSTrowser/trowser.aspx"')
 	_ArrayAdd($params, "--supportserviceurl")
-	_ArrayAdd($params,  '"https://tss.turbine.com/TSSTrowser/SubmitTicket.asmx"')
+	_ArrayAdd($params, '"https://tss.turbine.com/TSSTrowser/SubmitTicket.asmx"')
 	_ArrayAdd($params, "--authserverurl")
 	_ArrayAdd($params, '"' & $authserver & '"')
 	_ArrayAdd($params, "--glsticketlifetime")
@@ -191,7 +206,7 @@ Func run_ddo($gamedir, $username, $ticket, $language, $world, $gamename, $authse
 	EndIf
 
 	ConsoleWrite(_ArrayToString($params, ' ') & @CRLF)
-EndFunc
+EndFunc   ;==>run_ddo
 
 Func join_queue($name, $ticket, $world, $LoginQueueURL)
 	$params = "command=TakeANumber&subscription=" & $name & "&ticket=" & _UnicodeURLEncode($ticket) & "&ticket_type=GLS&queue_url=" & _UnicodeURLEncode($world[5])
@@ -219,28 +234,28 @@ Func join_queue($name, $ticket, $world, $LoginQueueURL)
 			EndIf
 
 			If $number > $nowserving Then
-				sleep(2000)
+				Sleep(2000)
 			Else
 				ExitLoop
 			EndIf
 		EndIf
 	WEnd
-EndFunc
+EndFunc   ;==>join_queue
 
 Func login($authserver, $world, $username, $password, $subscription, $gamename, $LoginQueueURL)
 	Local $login_result[0]
 	Local $found_ddo = False
 
 	$xml = '<?xml version="1.0" encoding="utf-8"?>' & _
-		'<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">' & _
+			'<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">' & _
 			'<soap:Body>' & _
-				'<LoginAccount xmlns="http://www.turbine.com/SE/GLS">' & _
-					'<username>' & $username & '</username>' & _
-					'<password>' & $password & '</password>' & _
-					'<additionalInfo></additionalInfo>' & _
-				'</LoginAccount>' & _
+			'<LoginAccount xmlns="http://www.turbine.com/SE/GLS">' & _
+			'<username>' & $username & '</username>' & _
+			'<password>' & $password & '</password>' & _
+			'<additionalInfo></additionalInfo>' & _
+			'</LoginAccount>' & _
 			'</soap:Body>' & _
-		'</soap:Envelope>'
+			'</soap:Envelope>'
 
 	$oXML = _CreateMSXMLObj(1)
 	$oXML.setOption(2, 13056)
@@ -278,7 +293,7 @@ Func login($authserver, $world, $username, $password, $subscription, $gamename, 
 
 	If $found_ddo == False Then
 		ConsoleWrite("Unable to find a subscription on your account for DDO. Your LotrO account?" & @CRLF)
-		exit 2
+		Exit 2
 	EndIf
 
 	_ArrayAdd($login_result, $account)
@@ -287,7 +302,7 @@ Func login($authserver, $world, $username, $password, $subscription, $gamename, 
 	join_queue($account, $ticket, $world, $LoginQueueURL)
 
 	Return $login_result
-EndFunc
+EndFunc   ;==>login
 
 Func query_queue_url($configserver)
 	Local $url = ""
@@ -296,8 +311,8 @@ Func query_queue_url($configserver)
 	If Not IsObj($oXML) Then
 		ConsoleWrite("_CreateMSXMLObj(1) ERROR!: Unable to create MSXML Object!!" & @CRLF)
 	Else
-		$oXML.open("GET", $configserver, false);
-		$oXML.send();
+		$oXML.open("GET", $configserver, False) ;
+		$oXML.send() ;
 		$oStatusCode = $oXML.status
 
 		If $oStatusCode = 200 Then
@@ -307,11 +322,11 @@ Func query_queue_url($configserver)
 		EndIf
 	EndIf
 
-	return $url
-EndFunc
+	Return $url
+EndFunc   ;==>query_queue_url
 
 Func get_config_data($basepath)
-	Local $config[2] = ["",""]
+	Local $config[2] = ["", ""]
 
 	$filename = "TurbineLauncher.exe.config"
 	$path = $basepath & "\" & $filename
@@ -330,10 +345,10 @@ Func get_config_data($basepath)
 	EndIf
 
 	$root = $oXML.documentElement
- 	$config[0] = $root.selectSingleNode('appSettings/add[@key = "Launcher.DataCenterService.GLS"]').getAttribute("value")
+	$config[0] = $root.selectSingleNode('appSettings/add[@key = "Launcher.DataCenterService.GLS"]').getAttribute("value")
 	$config[1] = $root.selectSingleNode('appSettings/add[@key = "DataCenter.GameName"]').getAttribute("value")
-	return $config
-EndFunc
+	Return $config
+EndFunc   ;==>get_config_data
 
 Func query_host($world)
 	Local $url = ""
@@ -342,8 +357,8 @@ Func query_host($world)
 	If Not IsObj($oXML) Then
 		ConsoleWrite("_CreateMSXMLObj(1) ERROR!: Unable to create MSXML Object!!" & @CRLF)
 	Else
-		$oXML.open("GET", $world[4], false);
-		$oXML.send();
+		$oXML.open("GET", $world[4], False) ;
+		$oXML.send() ;
 		$oStatusCode = $oXML.status
 
 		If $oStatusCode = 200 Then
@@ -360,23 +375,23 @@ Func query_host($world)
 			ConsoleWrite("Error " & $oXML.status & ": " & $oXML.statusText & @CRLF)
 		EndIf
 	EndIf
-	return $world
-EndFunc
+	Return $world
+EndFunc   ;==>query_host
 
 Func query_worlds($url, $gamename)
-	Local $config[4] = ["","",""]
-	Local $w[6] = ["","","","","",""]
+	Local $config[4] = ["", "", ""]
+	Local $w[6] = ["", "", "", "", "", ""]
 	Local $game_world[1]
 	Local $game_servers[0]
 
 	$sPD = '<?xml version="1.0" encoding="utf-8"?>' & _
-		'<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">' & _
+			'<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">' & _
 			'<soap:Body>' & _
-				'<GetDatacenters xmlns="http://www.turbine.com/SE/GLS">' & _
-					'<game>' & $gamename & '</game>' & _
-				'</GetDatacenters>' & _
+			'<GetDatacenters xmlns="http://www.turbine.com/SE/GLS">' & _
+			'<game>' & $gamename & '</game>' & _
+			'</GetDatacenters>' & _
 			'</soap:Body>' & _
-		'</soap:Envelope>'
+			'</soap:Envelope>'
 	$oXML = _CreateMSXMLObj(1)
 	$oXML.Open("POST", $url, False)
 	$oXML.SetRequestHeader("Content-Type", "text/xml; charset=utf-8")
@@ -411,28 +426,28 @@ Func query_worlds($url, $gamename)
 	EndIf
 
 	Return $config
-EndFunc
+EndFunc   ;==>query_worlds
 
 Func patch_game($gamedir, $patchserver, $language, $game)
-	$handle = Run(@ComSpec & ' /c ' & "rundll32.exe PatchClient.dll,Patch " & $patchserver & " --highres --filesonly --language " & $language & " --productcode " & $game, $gamedir,@sw_hide,0x6)
+	$handle = Run(@ComSpec & ' /c ' & "rundll32.exe PatchClient.dll,Patch " & $patchserver & " --highres --filesonly --language " & $language & " --productcode " & $game, $gamedir, @SW_HIDE, 0x6)
 	While 1
 		$patch_text = StdoutRead($handle)
 		If @error Then ExitLoop
-		sleep(1000)
+		Sleep(1000)
 		ConsoleWrite($patch_text)
 	WEnd
-	$handle = Run(@ComSpec & ' /c ' & "rundll32.exe PatchClient.dll,Patch " & $patchserver & " --highres --dataonly --language " & $language & " --productcode " & $game, $gamedir,@sw_hide,0x6)
+	$handle = Run(@ComSpec & ' /c ' & "rundll32.exe PatchClient.dll,Patch " & $patchserver & " --highres --dataonly --language " & $language & " --productcode " & $game, $gamedir, @SW_HIDE, 0x6)
 	While 1
 		$patch_text = StdoutRead($handle)
 		If @error Then ExitLoop
-		sleep(1000)
+		Sleep(1000)
 		ConsoleWrite($patch_text)
 	WEnd
-EndFunc
+EndFunc   ;==>patch_game
 
 Func _CreateMSXMLObj($mode) ; Creates a MSXML instance depending on the version installed on the system
 	Switch $mode
-		Case 0		; for local file
+		Case 0 ; for local file
 			$xmlObj = ObjCreate("Msxml2.DOMdocument.6.0") ; Latest available, default in Vista
 			If Not IsObj($xmlObj) Then
 				$xmlObj = ObjCreate("Msxml2.DOMdocument.5.0") ; Office 2003
@@ -449,7 +464,7 @@ Func _CreateMSXMLObj($mode) ; Creates a MSXML instance depending on the version 
 					EndIf
 				EndIf
 			EndIf
-		Case 1		; for remote file
+		Case 1 ; for remote file
 			$xmlObj = ObjCreate("Msxml2.ServerXMLHTTP")
 			If Not IsObj($xmlObj) Then
 				Return Null
@@ -472,15 +487,15 @@ Func Usage()
 	ConsoleWrite(" -z --subscription Specify subscription name, default to the first one" & @CRLF)
 	ConsoleWrite(" -v --version Print version and author information." & @CRLF)
 	ConsoleWrite(" -o --out-port Output for DDO to use. DDO binds to this address so using the same port again will cause DDO to fail." & @CRLF)
-EndFunc
+EndFunc   ;==>Usage
 
 Func Version()
-	ConsoleWrite("ddolauncher - An alternate DDO launcher v0.1" & @CRLF)
+	ConsoleWrite("ddolauncher - An alternate DDO launcher v" & _GetVersion() & @CRLF)
 	ConsoleWrite("Original: Copyright 2012 by Florian Stinglmayr" & @CRLF)
 	ConsoleWrite("Website: http://github/n0la/ddolauncher" & @CRLF)
 	ConsoleWrite("Modified by AtomicMew: accept command line password, multiple subscriptions and always output to stdout" & @CRLF)
 	ConsoleWrite("AutoIt port from Python by: MIvanIsten (https://github.com/MIvanIsten)" & @CRLF)
-EndFunc
+EndFunc   ;==>Version
 
 ;===============================================================================
 ; _UnicodeURLEncode()
@@ -493,15 +508,15 @@ EndFunc
 ;===============================================================================
 
 Func _UnicodeURLEncode($UnicodeURL)
-	$UnicodeBinary = StringToBinary ($UnicodeURL, 4)
+	$UnicodeBinary = StringToBinary($UnicodeURL, 4)
 	$UnicodeBinary2 = StringReplace($UnicodeBinary, '0x', '', 1)
 	$UnicodeBinaryLength = StringLen($UnicodeBinary2)
 	Local $EncodedString
 	For $i = 1 To $UnicodeBinaryLength Step 2
 		$UnicodeBinaryChar = StringMid($UnicodeBinary2, $i, 2)
 ;~ 		If StringInStr("$-_.+!*'(),;/?:@=&abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890", BinaryToString ('0x' & $UnicodeBinaryChar, 4)) Then
-		If StringInStr("-_.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890", BinaryToString ('0x' & $UnicodeBinaryChar, 4)) Then
-			$EncodedString &= BinaryToString ('0x' & $UnicodeBinaryChar)
+		If StringInStr("-_.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890", BinaryToString('0x' & $UnicodeBinaryChar, 4)) Then
+			$EncodedString &= BinaryToString('0x' & $UnicodeBinaryChar)
 		Else
 			$EncodedString &= '%' & $UnicodeBinaryChar
 		EndIf
@@ -534,7 +549,7 @@ Func _UnicodeURLDecode($toDecode)
 			$strChar = $strChar & $aryHex[$i]
 		EndIf
 	Next
-	$Process = StringToBinary (StringReplace($strChar, "+", " "))
-	$DecodedString = BinaryToString ($Process, 4)
+	$Process = StringToBinary(StringReplace($strChar, "+", " "))
+	$DecodedString = BinaryToString($Process, 4)
 	Return $DecodedString
 EndFunc   ;==>_UnicodeURLDecode

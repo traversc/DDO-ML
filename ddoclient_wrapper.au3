@@ -1,48 +1,60 @@
-#AutoIt3Wrapper_UseX64=N
-#include <File.au3>
-traysetstate(2)
+#cs
+	[FileVersion]
+#ce
+#Region ;**** Directives created by AutoIt3Wrapper_GUI ****
+#AutoIt3Wrapper_Icon=icon.ico
+#AutoIt3Wrapper_UseX64=n
+#AutoIt3Wrapper_Res_Field=ProductName|DDO-ML
+#AutoIt3Wrapper_Res_Description=An alternate DDO launcher
+#AutoIt3Wrapper_Res_Fileversion=1.0.1.0
+#AutoIt3Wrapper_Add_Constants=n
+#AutoIt3Wrapper_Run_Au3Stripper=y
+#Au3Stripper_Parameters=/rsln /mo
+#EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 
+#include <File.au3>
+TraySetState(2)
+
+If $CmdLine[0] < 2 Then Exit 1
 
 $ini_file = "ddo-ml.ini"
 $debug = IniRead($ini_file, "startup", "debug", "0")
-;~ msgbox(0,"",$cmdline[0])
-;~ msgbox(0,"",$cmdline[1])
-;~ msgbox(0,"",$cmdline[2])
-;~ msgbox(0,"",$cmdline[3])
-;~ msgbox(0,"",$cmdline[4])
 
 $pid = $cmdline[1]
 $rename = $cmdline[2]
-;msgbox(0,"",$py_out)
 
-		if $debug == 1 Then
-			_FileWriteLog ( "debug.txt", $pid )
-	    EndIf
+If $debug == 1 Then
+	_FileWriteLog("debug.txt", $pid)
+EndIf
 
-		$rArr = _ProcessGetHWnd($pid, 2, "[Title:Dungeons and Dragons Online; CLASS:Turbine Device Class]", 8000)
-		;update 19 - DDO creates "ghost" first window before creating real window
-		If Not @error Then
-			$handle = $rArr[1][1]
-			$timer = timerInit()
-			If $rename <> "" Then
-				WinSetTitle($handle, "", $rename)
-			EndIf
-			while(WinExists($handle))
-				if TimerDiff($timer) > 7000 Then exit 1
-				Sleep(Opt("WinWaitDelay"))
-			WEnd
-		EndIf
-		$rArr = _ProcessGetHWnd($pid, 2, "[Title:Dungeons and Dragons Online; CLASS:Turbine Device Class]", 8000)
-		If Not @error Then
-			If $rename == "" Then
-				exit 0
-			EndIf
-			$handle = $rArr[1][1]
-			WinSetTitle($handle, "", $rename)
-			exit 0
-		Else
-			exit 1
-		EndIf
+$rArr = _ProcessGetHWnd($pid, 2, "[Title:Dungeons and Dragons Online; CLASS:Turbine Device Class]", 8000)
+;update 19 - DDO creates "ghost" first window before creating real window
+If Not @error Then
+	$handle = $rArr[1][1]
+	$timer = TimerInit()
+	WinSetTitle($handle, "", $rename)
+	While (WinExists($handle))
+		If TimerDiff($timer) > 7000 Then Exit 1
+		Sleep(Opt("WinWaitDelay"))
+	WEnd
+EndIf
+
+$rArr = _ProcessGetHWnd($pid, 2, "[Title:Dungeons and Dragons Online; CLASS:Turbine Device Class]", 8000)
+If Not @error Then
+	$handle = $rArr[1][1]
+	WinSetTitle($handle, "", $rename)
+	Exit 0
+Else
+	Exit 1
+EndIf
+
+Func _GetVersion()
+	If @Compiled Then
+		Return FileGetVersion(@AutoItExe)
+	Else
+		Return IniRead(@ScriptFullPath, "FileVersion", "#AutoIt3Wrapper_Res_Fileversion", "0.0.0.0")
+	EndIf
+EndFunc   ;==>_GetVersion
 
 Func _ProcessGetHWnd($iPid, $iOption = 1, $sTitle = "", $iTimeout = 2000)
 	Local $aReturn[1][1] = [[0]], $aWin, $hTimer = TimerInit()
@@ -80,7 +92,6 @@ Func _ProcessGetHWnd($iPid, $iOption = 1, $sTitle = "", $iTimeout = 2000)
 		; Waits before new attempt
 		Sleep(Opt("WinWaitDelay"))
 	WEnd
-
 
 	; No matches
 	SetError(1)

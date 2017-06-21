@@ -153,7 +153,7 @@ Func _XMLFileOpen($strXMLFile, $strNameSpc = "", $iVer = -1, $bValOnParse = True
 			Return 0
 		EndIf
 	Else
-		For $x = 8 To 0 Step - 1
+		For $x = 8 To 0 Step -1
 			If FileExists(@SystemDir & "\msxml" & $x & ".dll") Then
 				$objDoc = ObjCreate("Msxml2.DOMDocument." & $x & ".0")
 				If IsObj($objDoc) Then
@@ -177,15 +177,15 @@ Func _XMLFileOpen($strXMLFile, $strNameSpc = "", $iVer = -1, $bValOnParse = True
 	$objDoc.async = False
 	$objDoc.preserveWhiteSpace = True
 	$objDoc.validateOnParse = $bValOnParse
-	if $DOMVERSION > 4 Then $objDoc.setProperty ("ProhibitDTD",false)
-	$objDoc.Load ($strFile)
-	$objDoc.setProperty ("SelectionLanguage", "XPath")
-	$objDoc.setProperty ("SelectionNamespaces", $strNameSpc)
-	if $objDoc.parseError.errorCode >0 Then consoleWrite($objDoc.parseError.reason&@LF)
+	If $DOMVERSION > 4 Then $objDoc.setProperty("ProhibitDTD", False)
+	$objDoc.Load($strFile)
+	$objDoc.setProperty("SelectionLanguage", "XPath")
+	$objDoc.setProperty("SelectionNamespaces", $strNameSpc)
+	If $objDoc.parseError.errorCode > 0 Then ConsoleWrite($objDoc.parseError.reason & @LF)
 	If $objDoc.parseError.errorCode <> 0 Then
 		_XMLError("Error opening specified file: " & $strXMLFile & @CRLF & $objDoc.parseError.reason)
 		;Tom Hohmann 2008/02/29
-		SetError(1,$objDoc.parseError.errorCode,-1)
+		SetError(1, $objDoc.parseError.errorCode, -1)
 		$objDoc = 0
 		Return -1
 	EndIf
@@ -204,7 +204,7 @@ EndFunc   ;==>_XMLFileOpen
 ;
 ; Author(s):		Stephen Podhajecki <gehossafats@netmdc.com>,Lukasz Suleja,Tom Hohmann
 ;===============================================================================
-Func _XMLLoadXML($strXML,$strNameSpc="", $iVer = -1, $bValOnParse = True)
+Func _XMLLoadXML($strXML, $strNameSpc = "", $iVer = -1, $bValOnParse = True)
 	If $iVer <> -1 Then
 		If $iVer > -1 And $iVer < 7 Then
 			$objDoc = ObjCreate("Msxml2.DOMDocument." & $iVer & ".0")
@@ -217,7 +217,7 @@ Func _XMLLoadXML($strXML,$strNameSpc="", $iVer = -1, $bValOnParse = True)
 			Return 0
 		EndIf
 	Else
-		For $x = 8 To 0 Step - 1
+		For $x = 8 To 0 Step -1
 			If FileExists(@SystemDir & "\msxml" & $x & ".dll") Then
 				$objDoc = ObjCreate("Msxml2.DOMDocument." & $x & ".0")
 				If IsObj($objDoc) Then
@@ -240,19 +240,19 @@ Func _XMLLoadXML($strXML,$strNameSpc="", $iVer = -1, $bValOnParse = True)
 	$objDoc.async = False
 	$objDoc.preserveWhiteSpace = True
 	$objDoc.validateOnParse = $bValOnParse
-	if $DOMVERSION > 4 Then $objDoc.setProperty ("ProhibitDTD",false)
-	$objDoc.LoadXml ($strXML)
-	$objDoc.setProperty ("SelectionLanguage", "XPath")
-	$objDoc.setProperty ("SelectionNamespaces", $strNameSpc); "xmlns:ms='urn:schemas-microsoft-com:xslt'"
+	If $DOMVERSION > 4 Then $objDoc.setProperty("ProhibitDTD", False)
+	$objDoc.LoadXml($strXML)
+	$objDoc.setProperty("SelectionLanguage", "XPath")
+	$objDoc.setProperty("SelectionNamespaces", $strNameSpc) ; "xmlns:ms='urn:schemas-microsoft-com:xslt'"
 	If $objDoc.parseError.errorCode <> 0 Then
 		_XMLError("Error loading the XML data: " & @CRLF & $objDoc.parseError.reason)
 		;Tom Hohmann 2008/02/29
-		SetError(1,$objDoc.parseError.errorCode, -1)
+		SetError(1, $objDoc.parseError.errorCode, -1)
 		Return -1
 	EndIf
 	;Tom Hohmann 2008/02/29
 	Return 1
-EndFunc   ;==>_MSXMLLoadXML
+EndFunc   ;==>_XMLLoadXML
 
 ;===============================================================================
 ; Function Name:	_XMLCreateFile
@@ -304,7 +304,7 @@ Func _XMLCreateFile($strPath, $strRoot, $bOverwrite = False, $bUTF8 = False, $ve
 				Return 0
 			EndIf
 		Else
-			For $x = 8 To 0 Step - 1
+			For $x = 8 To 0 Step -1
 				If FileExists(@SystemDir & "\msxml" & $x & ".dll") Then
 					$objDoc = ObjCreate("Msxml2.DOMDocument." & $x & ".0")
 					If IsObj($objDoc) Then
@@ -318,17 +318,17 @@ Func _XMLCreateFile($strPath, $strRoot, $bOverwrite = False, $bUTF8 = False, $ve
 			Return SetError(2)
 		EndIf
 		If $bUTF8 Then
-			$objPI = $objDoc.createProcessingInstruction ("xml", "version=""1.0"" encoding=""UTF-8""")
+			$objPI = $objDoc.createProcessingInstruction("xml", "version=""1.0"" encoding=""UTF-8""")
 		Else
-			$objPI = $objDoc.createProcessingInstruction ("xml", "version=""1.0""")
+			$objPI = $objDoc.createProcessingInstruction("xml", "version=""1.0""")
 		EndIf
-		$objDoc.appendChild ($objPI)
-		$rootElement = $objDoc.createElement ($strRoot)
+		$objDoc.appendChild($objPI)
+		$rootElement = $objDoc.createElement($strRoot)
 		$objDoc.documentElement = $rootElement
-		$objDoc.save ($strPath)
+		$objDoc.save($strPath)
 		If $objDoc.parseError.errorCode <> 0 Then
 			_XMLError("Error Creating specified file: " & $strPath)
-;			Tom Hohmann 2008/02/29
+			;			Tom Hohmann 2008/02/29
 			SetError(1, $objDoc.parseError.errorCode, -1)
 			Return -1
 		EndIf
@@ -350,29 +350,29 @@ EndFunc   ;==>_XMLCreateFile
 ; Author(s):		Stephen Podhajecki <gehossafats@netmdc.com>
 ;===============================================================================
 Func _XMLSelectNodes($strXPath)
-	If not IsObj($objDoc) then
+	If Not IsObj($objDoc) Then
 		_XMLError("No object passed to function _XMLSelectNodes")
-		Return SetError(2,0,-1)
+		Return SetError(2, 0, -1)
 	EndIf
 	Local $objNode, $objNodeList, $arrResponse[1], $xmlerr
-	$objNodeList = $objDoc.selectNodes ($strXPath)
-		If Not IsObj($objNodeList) Then
-			_XMLError("\nNo matching nodes found")
-			Return SetError(1,0,-1)
-		EndIf
-		If $objNodeList.length < 1 Then
-			_XMLError("\nNo matching nodes found")
-			Return SetError(1,0,-1)
-		EndIf
-		For $objNode In $objNodeList
-			_XMLArrayAdd($arrResponse, $objNode.nodeName)
-			_DebugWrite($objNode.nodeName)
-			_DebugWrite($objNode.namespaceURI)
-		Next
-		$arrResponse[0] = $objNodeList.length
-		Return $arrResponse
+	$objNodeList = $objDoc.selectNodes($strXPath)
+	If Not IsObj($objNodeList) Then
+		_XMLError("\nNo matching nodes found")
+		Return SetError(1, 0, -1)
+	EndIf
+	If $objNodeList.length < 1 Then
+		_XMLError("\nNo matching nodes found")
+		Return SetError(1, 0, -1)
+	EndIf
+	For $objNode In $objNodeList
+		_XMLArrayAdd($arrResponse, $objNode.nodeName)
+		_DebugWrite($objNode.nodeName)
+		_DebugWrite($objNode.namespaceURI)
+	Next
+	$arrResponse[0] = $objNodeList.length
+	Return $arrResponse
 	_XMLError("Error Selecting Node(s): " & $strXPath & $xmlerr)
-	Return SetError(1,0,-1)
+	Return SetError(1, 0, -1)
 EndFunc   ;==>_XMLSelectNodes
 
 ;===============================================================================
@@ -385,48 +385,48 @@ EndFunc   ;==>_XMLSelectNodes
 ;							On Failure -1 set @Error = 1
 ;===============================================================================
 Func _XMLGetField($strXPath)
-	If not IsObj($objDoc) then
+	If Not IsObj($objDoc) Then
 		_XMLError("No object passed to function _XMLGetField")
-		Return SetError(1,2,-1)
+		Return SetError(1, 2, -1)
 	EndIf
 	Local $objNodeList, $arrResponse[1], $xmlerr, $szNodePath
-		$objNodeList = $objDoc.selectSingleNode ($strXPath)
-		If Not IsObj($objNodeList) Then
-			_XMLError("\nNo Matching Nodes found")
-			$arrResponse[0] = 0
-			Return SetError(2,0,-1)
-		EndIf
-		If $objNodeList.hasChildNodes () Then
-			Local $count = $objNodeList.childNodes.length
-			For $x =1 to $count
-				$objChild = $objNodeList.childNodes($x)
-					_DebugWrite("ParentNode="&$objNodeList.parentNode.nodeType)
-					If $objNodeList.parentNode.nodeType =$NODE_DOCUMENT Then
-						$szNodePath="/"&$objNodeList.baseName &"/*["&$x&"]"
-					Else
-						$szNodePath = $objNodeList.baseName &"/*["&$x&"]"
-					EndIf
+	$objNodeList = $objDoc.selectSingleNode($strXPath)
+	If Not IsObj($objNodeList) Then
+		_XMLError("\nNo Matching Nodes found")
+		$arrResponse[0] = 0
+		Return SetError(2, 0, -1)
+	EndIf
+	If $objNodeList.hasChildNodes() Then
+		Local $count = $objNodeList.childNodes.length
+		For $x = 1 To $count
+			$objChild = $objNodeList.childNodes($x)
+			_DebugWrite("ParentNode=" & $objNodeList.parentNode.nodeType)
+			If $objNodeList.parentNode.nodeType = $NODE_DOCUMENT Then
+				$szNodePath = "/" & $objNodeList.baseName & "/*[" & $x & "]"
+			Else
+				$szNodePath = $objNodeList.baseName & "/*[" & $x & "]"
+			EndIf
 
-					$aRet = _XMLGetValue($szNodePath)
-					If IsArray($aRet) Then
-						If UBound($aRet) > 1 Then
-							_XMLArrayAdd($arrResponse, $aRet[1])
-							_DebugWrite("GetField>Text:" & $aRet[1])
-						EndIf
-					Else
-						_XMLArrayAdd($arrResponse, "")
-						_DebugWrite("GetField>Text:" & "")
-					EndIf
-			Next
-			$arrResponse[0] = UBound($arrResponse) - 1
-			Return $arrResponse
-		Else
-			$arrResponse[0] = 0
-			_XMLError("\nNo Child Nodes found")
-			Return SetError(1,0,-1)
-		EndIf
-		_XMLError("Error Selecting Node(s): " & $strXPath & $xmlerr)
-	Return SetError(1,0,-1)
+			$aRet = _XMLGetValue($szNodePath)
+			If IsArray($aRet) Then
+				If UBound($aRet) > 1 Then
+					_XMLArrayAdd($arrResponse, $aRet[1])
+					_DebugWrite("GetField>Text:" & $aRet[1])
+				EndIf
+			Else
+				_XMLArrayAdd($arrResponse, "")
+				_DebugWrite("GetField>Text:" & "")
+			EndIf
+		Next
+		$arrResponse[0] = UBound($arrResponse) - 1
+		Return $arrResponse
+	Else
+		$arrResponse[0] = 0
+		_XMLError("\nNo Child Nodes found")
+		Return SetError(1, 0, -1)
+	EndIf
+	_XMLError("Error Selecting Node(s): " & $strXPath & $xmlerr)
+	Return SetError(1, 0, -1)
 EndFunc   ;==>_XMLGetField
 ;===============================================================================
 ; Function Name: 	_XMLGetValue
@@ -442,39 +442,39 @@ EndFunc   ;==>_XMLGetField
 ;										1 = No object passed
 ;===============================================================================
 Func _XMLGetValue($strXPath)
-	If not IsObj($objDoc) then
+	If Not IsObj($objDoc) Then
 		_XMLError("No object passed to function _XMLGetValue")
-		Return SetError(1,1,-1)
+		Return SetError(1, 1, -1)
 	EndIf
 	Local $objNodeList, $arrResponse[1], $objNodeChild, $xmlerr
-		_DebugWrite("GetValue>$strXPath:"&$strXPath)
-		$objNodeList = $objDoc.documentElement.selectNodes ($strXPath)
-		If $objNodeList.length > 0 Then
-			_DebugWrite("GetValue list length:" & $objNodeList.length)
-			For $objNode In $objNodeList
-				If $objNode.hasChildNodes () = False Then
-					_XMLArrayAdd($arrResponse, $objNode.nodeValue)
-				Else
-					For $objNodeChild In $objNode.childNodes ()
-						If $objNodeChild.nodeType = $NODE_CDATA_SECTION Then
-							_XMLArrayAdd($arrResponse, $objNodeChild.data)
-							_DebugWrite("GetValue>CData:" & $objNodeChild.data)
-						ElseIf $objNodeChild.nodeType = $NODE_TEXT Then
-							_XMLArrayAdd($arrResponse, $objNodeChild.Text)
-							_DebugWrite("GetValue>Text:" & $objNodeChild.Text)
-						EndIf
-					Next
-				EndIf
-			Next
-			$arrResponse[0] = UBound($arrResponse) - 1
-			Return $arrResponse
-		Else
-			$xmlerr = @CRLF & "No matching node(s)found!"
-			Return SetError(1,0,-1)
-		EndIf
+	_DebugWrite("GetValue>$strXPath:" & $strXPath)
+	$objNodeList = $objDoc.documentElement.selectNodes($strXPath)
+	If $objNodeList.length > 0 Then
+		_DebugWrite("GetValue list length:" & $objNodeList.length)
+		For $objNode In $objNodeList
+			If $objNode.hasChildNodes() = False Then
+				_XMLArrayAdd($arrResponse, $objNode.nodeValue)
+			Else
+				For $objNodeChild In $objNode.childNodes()
+					If $objNodeChild.nodeType = $NODE_CDATA_SECTION Then
+						_XMLArrayAdd($arrResponse, $objNodeChild.data)
+						_DebugWrite("GetValue>CData:" & $objNodeChild.data)
+					ElseIf $objNodeChild.nodeType = $NODE_TEXT Then
+						_XMLArrayAdd($arrResponse, $objNodeChild.Text)
+						_DebugWrite("GetValue>Text:" & $objNodeChild.Text)
+					EndIf
+				Next
+			EndIf
+		Next
+		$arrResponse[0] = UBound($arrResponse) - 1
+		Return $arrResponse
+	Else
+		$xmlerr = @CRLF & "No matching node(s)found!"
+		Return SetError(1, 0, -1)
+	EndIf
 	_XMLError("Error Retrieving: " & $strXPath & $xmlerr)
 
-	Return SetError(1,0, -1)
+	Return SetError(1, 0, -1)
 EndFunc   ;==>_XMLGetValue
 ;===============================================================================
 ; Function Name:	_XMLDeleteNode
@@ -490,23 +490,23 @@ EndFunc   ;==>_XMLGetValue
 ;										2 = No object passed
 ;===============================================================================
 Func _XMLDeleteNode($strXPath)
-	If not IsObj($objDoc) then
+	If Not IsObj($objDoc) Then
 		_XMLError("No object passed to function _XMLDeleteNode")
-		Return SetError(2,0,-1)
+		Return SetError(2, 0, -1)
 	EndIf
 	Local $objNode, $xmlerr
-	$objNode = $objDoc.selectNodes ($strXPath)
+	$objNode = $objDoc.selectNodes($strXPath)
 	If Not IsObj($objNode) Then $xmlerr = @CRLF & "Node Not found"
-	if @error = 0 Then
-		For $objChild in $objNode
+	If @error = 0 Then
+		For $objChild In $objNode
 			ConsoleWrite("Delete node " & $objChild.nodeName & @LF)
-			$objChild.parentNode.removeChild ($objChild)
+			$objChild.parentNode.removeChild($objChild)
 		Next
-		If ($bXMLAUTOSAVE = True) Then $objDoc.save ($strFile)
+		If ($bXMLAUTOSAVE = True) Then $objDoc.save($strFile)
 		Return 1
 	EndIf
 	_XMLError("Error Deleting Node: " & $strXPath & $xmlerr)
-	Return SetError(1,0,-1)
+	Return SetError(1, 0, -1)
 EndFunc   ;==>_XMLDeleteNode
 
 ;===============================================================================
@@ -524,25 +524,25 @@ EndFunc   ;==>_XMLDeleteNode
 ;									2 = No object
 ;===============================================================================
 Func _XMLDeleteAttr($strXPath, $strAttrib)
-	If not IsObj($objDoc) then
+	If Not IsObj($objDoc) Then
 		_XMLError("No object passed to function _XMLDeleteAttr")
-		Return SetError(2,0,-1)
+		Return SetError(2, 0, -1)
 	EndIf
-Local $objNode, $objAttr, $xmlerr
-	$objNode = $objDoc.selectSingleNode ($strXPath)
+	Local $objNode, $objAttr, $xmlerr
+	$objNode = $objDoc.selectSingleNode($strXPath)
 	If IsObj($objNode) Then
-		$objAttr = $objNode.getAttributeNode ($strAttrib)
+		$objAttr = $objNode.getAttributeNode($strAttrib)
 		If Not (IsObj($objAttr)) Then
 			_XMLError("Attribute " & $strAttrib & " does not exist!")
-			Return SetError(2,0,-1)
+			Return SetError(2, 0, -1)
 		EndIf
-		$objAttr = $objNode.removeAttribute ($strAttrib)
-				If ($bXMLAUTOSAVE = True) Then $objDoc.save ($strFile)
+		$objAttr = $objNode.removeAttribute($strAttrib)
+		If ($bXMLAUTOSAVE = True) Then $objDoc.save($strFile)
 		Return 1
 	EndIf
 	_XMLError("Error Removing Attribute: " & $strXPath & " - " & $strAttrib & @CRLF & $xmlerr)
 	$xmlerr = ""
-	Return SetError(1,0,-1)
+	Return SetError(1, 0, -1)
 EndFunc   ;==>_XMLDeleteAttr
 ;===============================================================================
 ; Function Name:	_XMLDeleteAttrNode
@@ -559,21 +559,21 @@ EndFunc   ;==>_XMLDeleteAttr
 ;									2 = No object
 ;===============================================================================
 Func _XMLDeleteAttrNode($strXPath, $strAttrib)
-	If not IsObj($objDoc) then
+	If Not IsObj($objDoc) Then
 		_XMLError("No object passed to function _XMLDeleteAttrNode")
-		Return SetError(2,0,-1)
+		Return SetError(2, 0, -1)
 	EndIf
 	Local $objNode, $objAttr, $xmlerr
-	$objNode = $objDoc.selectSingleNode ($strXPath)
+	$objNode = $objDoc.selectSingleNode($strXPath)
 	If Not IsObj($objNode) Then
 		_XMLError("\nSpecified node not found!")
-		Return SetError(2,0,-1)
+		Return SetError(2, 0, -1)
 	EndIf
-	$objAttr = $objNode.removeAttributeNode ($objNode.getAttributeNode ($strAttrib))
-	If ($bXMLAUTOSAVE = True) Then $objDoc.save ($strFile)
+	$objAttr = $objNode.removeAttributeNode($objNode.getAttributeNode($strAttrib))
+	If ($bXMLAUTOSAVE = True) Then $objDoc.save($strFile)
 	If Not (IsObj($objAttr)) Then
 		_XMLError("\nUnspecified error:!")
-		Return SetError(1,0,-1)
+		Return SetError(1, 0, -1)
 	EndIf
 	Return 1
 EndFunc   ;==>_XMLDeleteAttrNode
@@ -591,17 +591,17 @@ EndFunc   ;==>_XMLDeleteAttrNode
 ;									2 = No object
 ;===============================================================================
 Func _XMLGetAttrib($strXPath, $strAttrib, $strQuery = "")
-	If not IsObj($objDoc) then
+	If Not IsObj($objDoc) Then
 		_XMLError("No object passed to function _XMLGetAttrib")
-		Return SetError(2,0,-1)
+		Return SetError(2, 0, -1)
 	EndIf
 	;Local $objNodeList, $arrResponse[1], $i, $xmlerr, $objAttr
 	Local $objNodeList, $arrResponse, $i, $xmlerr, $objAttr
-	$objNodeList = $objDoc.documentElement.selectNodes ($strXPath & $strQuery)
+	$objNodeList = $objDoc.documentElement.selectNodes($strXPath & $strQuery)
 	_DebugWrite("Get Attrib length= " & $objNodeList.length)
 	If $objNodeList.length > 0 Then
 		For $i = 0 To $objNodeList.length - 1
-			$objAttr = $objNodeList.item ($i).getAttribute ($strAttrib)
+			$objAttr = $objNodeList.item($i).getAttribute($strAttrib)
 			$arrResponse = $objAttr
 			_DebugWrite("RET>>" & $objAttr)
 		Next
@@ -609,7 +609,7 @@ Func _XMLGetAttrib($strXPath, $strAttrib, $strQuery = "")
 	EndIf
 	$xmlerr = "\nNo qualified items found"
 	_XMLError("Attribute " & $strAttrib & " not found for: " & $strXPath & $xmlerr)
-	Return SetError(1,0,-1)
+	Return SetError(1, 0, -1)
 EndFunc   ;==>_XMLGetAttrib
 ;===============================================================================
 ; Function Name:	_XMLSetAttrib
@@ -622,29 +622,29 @@ EndFunc   ;==>_XMLGetAttrib
 ; Return Value(s)			array of fields text values
 ;					on error returns -1 and sets error to 1
 ;===============================================================================
-Func _XMLSetAttrib($strXPath, $strAttrib, $strValue = "", $iIndex =-1)
-	If not IsObj($objDoc) then
+Func _XMLSetAttrib($strXPath, $strAttrib, $strValue = "", $iIndex = -1)
+	If Not IsObj($objDoc) Then
 		_XMLError("No object passed to function _XMLSetAttrib")
-		Return SetError(1,8,-1)
+		Return SetError(1, 8, -1)
 	EndIf
 	Local $objNodeList, $arrResponse[1], $i
-	$objNodeList = $objDoc.selectNodes ($strXPath)
+	$objNodeList = $objDoc.selectNodes($strXPath)
 	_DebugWrite(" Node list Length: " & $objNodeList.length)
 	If @error = 0 And $objNodeList.length > 0 Then
 		If $iIndex > 0 Then
-			$arrResponse[0] = $objNodeList.item ($iIndex).SetAttribute ($strAttrib, $strValue)
+			$arrResponse[0] = $objNodeList.item($iIndex).SetAttribute($strAttrib, $strValue)
 		Else
 			ReDim $arrResponse[$objNodeList.length]
 			For $i = 0 To $objNodeList.length - 1
-				$arrResponse[$i] = $objNodeList.item ($i).SetAttribute ($strAttrib, $strValue)
+				$arrResponse[$i] = $objNodeList.item($i).SetAttribute($strAttrib, $strValue)
 				If $objDoc.parseError.errorCode <> 0 Then ExitLoop
 			Next
 		EndIf
 		If $objDoc.parseError.errorCode <> 0 Then
 			_XMLError("Error setting attribute for: " & $strXPath & @CRLF & $objDoc.parseError.reason)
-			Return SetError(1,$objDoc.parseError.errorCode,-1)
+			Return SetError(1, $objDoc.parseError.errorCode, -1)
 		EndIf
-		If ($bXMLAUTOSAVE = True) Then $objDoc.save ($strFile)
+		If ($bXMLAUTOSAVE = True) Then $objDoc.save($strFile)
 		Return $arrResponse
 	EndIf
 	_XMLError("Error failed to set attribute for: " & $strXPath & @CRLF)
@@ -666,12 +666,12 @@ EndFunc   ;==>_XMLSetAttrib
 ;					on error set error to 1 and returns -1
 ;===============================================================================
 Func _XMLGetAllAttrib($strXPath, ByRef $aName, ByRef $aValue, $strQry = "")
-	If not IsObj($objDoc) then
+	If Not IsObj($objDoc) Then
 		_XMLError("No object passed to function _XMLGetAllAttrib")
-		Return SetError(1,9,-1)
+		Return SetError(1, 9, -1)
 	EndIf
 	Local $objNodeList, $objQueryNodes, $objNode, $arrResponse[2][1], $i
-	$objQueryNodes = $objDoc.selectNodes ($strXPath & $strQry)
+	$objQueryNodes = $objDoc.selectNodes($strXPath & $strQry)
 	If $objQueryNodes.length > 0 Then
 		For $objNode In $objQueryNodes
 			$objNodeList = $objNode.attributes
@@ -681,21 +681,21 @@ Func _XMLGetAllAttrib($strXPath, ByRef $aName, ByRef $aValue, $strQry = "")
 				ReDim $aName[$objNodeList.length]
 				ReDim $aValue[$objNodeList.length]
 				For $i = 0 To $objNodeList.length - 1
-					$arrResponse[0][$i + 1] = $objNodeList.item ($i).nodeName
-					$arrResponse[1][$i + 1] = $objNodeList.item ($i).Value
-					$aName[$i] = $objNodeList.item ($i).nodeName
-					$aValue[$i] = $objNodeList.item ($i).Value
+					$arrResponse[0][$i + 1] = $objNodeList.item($i).nodeName
+					$arrResponse[1][$i + 1] = $objNodeList.item($i).Value
+					$aName[$i] = $objNodeList.item($i).nodeName
+					$aValue[$i] = $objNodeList.item($i).Value
 				Next
 			Else
 				_XMLError("No Attributes found for node")
-				Return SetError(1,0, -1)
+				Return SetError(1, 0, -1)
 			EndIf
 		Next
 		$arrResponse[0][0] = $objNodeList.length
 		Return $arrResponse
 	EndIf
 	_XMLError("Error retrieving attributes for: " & $strXPath & @CRLF)
-	return SetError(1,0 ,-1)
+	Return SetError(1, 0, -1)
 	;	EndIf
 EndFunc   ;==>_XMLGetAllAttrib
 ;===============================================================================
@@ -708,16 +708,16 @@ EndFunc   ;==>_XMLGetAllAttrib
 ; Return Value(s)			on error set error to 1 and returns -1
 ;===============================================================================
 Func _XMLUpdateField($strXPath, $strData)
-	If not IsObj($objDoc) then
+	If Not IsObj($objDoc) Then
 		_XMLError("No object passed to function _XMLUpdateField")
-		Return SetError(1,9,-1)
+		Return SetError(1, 9, -1)
 	EndIf
 	Local $objField, $bUpdate, $objNode
 	#forceref $objField
-	$objField = $objDoc.selectSingleNode ($strXPath)
+	$objField = $objDoc.selectSingleNode($strXPath)
 	If IsObj($objField) Then
 		If $objField.hasChildNodes Then
-			For $objChild In $objField.childNodes ()
+			For $objChild In $objField.childNodes()
 				If $objChild.nodetype = $NODE_TEXT Then
 					$objChild.Text = $strData
 					$bUpdate = True
@@ -725,16 +725,16 @@ Func _XMLUpdateField($strXPath, $strData)
 				EndIf
 			Next
 		EndIf
-		if $bUpdate = False Then
+		If $bUpdate = False Then
 			$objNode = $objDoc.createTextNode($strData)
 			$objField.appendChild($objNode)
 		EndIf
-		If ($bXMLAUTOSAVE = True) Then $objDoc.save ($strFile)
+		If ($bXMLAUTOSAVE = True) Then $objDoc.save($strFile)
 		$objField = ""
 		Return
 	EndIf
 	_XMLError("Failed to update field for: " & $strXPath & @CRLF)
-	Return SetError(1,0,-1)
+	Return SetError(1, 0, -1)
 
 EndFunc   ;==>_XMLUpdateField
 ;===============================================================================
@@ -748,26 +748,26 @@ EndFunc   ;==>_XMLUpdateField
 ; fixme, won't append to exisiting node. must create new node.
 ;===============================================================================
 Func _XMLCreateCDATA($strNode, $strCDATA, $strNameSpc = "")
-	If not IsObj($objDoc) then
+	If Not IsObj($objDoc) Then
 		_XMLError("No object passed to function _XMLCreateCDATA")
-		Return SetError(1,10,-1)
+		Return SetError(1, 10, -1)
 	EndIf
 	Local $objChild, $objNode
-	$objNode = $objDoc.createNode ($NODE_ELEMENT, $strNode, $strNameSpc)
+	$objNode = $objDoc.createNode($NODE_ELEMENT, $strNode, $strNameSpc)
 	If IsObj($objNode) Then
-		If Not ($objNode.hasChildNodes ()) Then
+		If Not ($objNode.hasChildNodes()) Then
 			_AddFormat($objDoc, $objNode)
 		EndIf
-		$objChild = $objDoc.createCDATASection ($strCDATA)
-		$objNode.appendChild ($objChild)
-		$objDoc.documentElement.appendChild ($objNode)
-				If ($bXMLAUTOSAVE = True) Then $objDoc.save ($strFile)
+		$objChild = $objDoc.createCDATASection($strCDATA)
+		$objNode.appendChild($objChild)
+		$objDoc.documentElement.appendChild($objNode)
+		If ($bXMLAUTOSAVE = True) Then $objDoc.save($strFile)
 		_AddFormat($objDoc)
 		$objChild = ""
 		Return 1
 	EndIf
 	_XMLError("Failed to create CDATA Section: " & $strNode & @CRLF)
-	Return SetError(1, 0 ,-1)
+	Return SetError(1, 0, -1)
 EndFunc   ;==>_XMLCreateCDATA
 ;===============================================================================
 ; Function Name:	_XMLCreateComment
@@ -779,26 +779,26 @@ EndFunc   ;==>_XMLCreateCDATA
 ; Return Value(s)			on error set error to 1 and returns -1
 ;===============================================================================
 Func _XMLCreateComment($strNode, $strComment)
-	If not IsObj($objDoc) then
+	If Not IsObj($objDoc) Then
 		_XMLError("No object passed to function _XMLCreateComment")
-		Return SetError(1,11,-1)
+		Return SetError(1, 11, -1)
 	EndIf
 	Local $objChild, $objNode
 
-	$objNode = $objDoc.selectSingleNode ($strNode)
+	$objNode = $objDoc.selectSingleNode($strNode)
 	If IsObj($objNode) Then
-		If Not ($objNode.hasChildNodes ()) Then
+		If Not ($objNode.hasChildNodes()) Then
 			_AddFormat($objDoc, $objNode)
 		EndIf
-		$objChild = $objDoc.createComment ($strComment)
-		$objNode.insertBefore ($objChild, $objNode.childNodes (0))
-				If ($bXMLAUTOSAVE = True) Then $objDoc.save ($strFile)
+		$objChild = $objDoc.createComment($strComment)
+		$objNode.insertBefore($objChild, $objNode.childNodes(0))
+		If ($bXMLAUTOSAVE = True) Then $objDoc.save($strFile)
 		_AddFormat($objDoc)
 		$objChild = ""
 		Return 1
 	EndIf
 	_XMLError("Failed to root child: " & $strNode & @CRLF)
-	Return SetError(1,0, -1)
+	Return SetError(1, 0, -1)
 EndFunc   ;==>_XMLCreateComment
 ;===============================================================================
 ; Function Name:	_XMLCreateAttribute
@@ -811,16 +811,16 @@ EndFunc   ;==>_XMLCreateComment
 ; Return Value(s)			1 on success, 0 on error
 ;===============================================================================
 Func _XMLCreateAttrib($strXPath, $strAttrName, $strAttrValue = "")
-	If not IsObj($objDoc) then
+	If Not IsObj($objDoc) Then
 		_XMLError("No object passed to function _XMLCreateAttrib")
-		Return SetError(1,12,-1)
+		Return SetError(1, 12, -1)
 	EndIf
 	Local $objNode, $objAttr, $objAttrVal, $err
-	$objNode = $objDoc.selectSingleNode ($strXPath)
+	$objNode = $objDoc.selectSingleNode($strXPath)
 	If IsObj($objNode) Then
-		$objAttr = $objDoc.createAttribute ($strAttrName);, $strNameSpc)
-		$objNode.SetAttribute ($strAttrName, $strAttrValue)
-				If ($bXMLAUTOSAVE = True) Then $objDoc.save ($strFile)
+		$objAttr = $objDoc.createAttribute($strAttrName) ;, $strNameSpc)
+		$objNode.SetAttribute($strAttrName, $strAttrValue)
+		If ($bXMLAUTOSAVE = True) Then $objDoc.save($strFile)
 		$objAttr = 0
 		$objAttrVal = 0
 		$objNode = 0
@@ -840,26 +840,26 @@ EndFunc   ;==>_XMLCreateAttrib
 ; Return Value(s)			on error set error to 1 and returns -1
 ;===============================================================================
 Func _XMLCreateRootChild($strNode, $strData = "", $strNameSpc = "")
-	If not IsObj($objDoc) then
+	If Not IsObj($objDoc) Then
 		_XMLError("No object passed to function _XMLCreateRootChild")
-		Return SetError(1,14,-1)
+		Return SetError(1, 14, -1)
 	EndIf
-	ConsoleWrite("_XMLCreateRootChild:"&$strNode&@LF)
+	ConsoleWrite("_XMLCreateRootChild:" & $strNode & @LF)
 	Local $objChild
-	If Not ($objDoc.documentElement.hasChildNodes ()) Then
+	If Not ($objDoc.documentElement.hasChildNodes()) Then
 		_AddFormat($objDoc)
 	EndIf
-	$objChild = $objDoc.createNode ($NODE_ELEMENT, $strNode, $strNameSpc)
+	$objChild = $objDoc.createNode($NODE_ELEMENT, $strNode, $strNameSpc)
 	If IsObj($objChild) Then
-	If $strData <> "" Then $objChild.text = $strData
-		$objDoc.documentElement.appendChild ($objChild)
-				If ($bXMLAUTOSAVE = True) Then $objDoc.save ($strFile)
+		If $strData <> "" Then $objChild.text = $strData
+		$objDoc.documentElement.appendChild($objChild)
+		If ($bXMLAUTOSAVE = True) Then $objDoc.save($strFile)
 		_AddFormat($objDoc)
 		$objChild = 0
 		Return 1
 	EndIf
 	_XMLError("Failed to root child: " & $strNode & @CRLF)
-	Return SetError(1,0,-1)
+	Return SetError(1, 0, -1)
 EndFunc   ;==>_XMLCreateRootChild
 ;===============================================================================
 ; Function Name:	_XMLCreateRootNodeWAttr
@@ -875,15 +875,15 @@ EndFunc   ;==>_XMLCreateRootChild
 ; Return Value(s)			on error set error to 1 or 2 and returns -1
 ;===============================================================================
 Func _XMLCreateRootNodeWAttr($strNode, $aAttr, $aVal, $strData = "", $strNameSpc = "")
-	If not IsObj($objDoc) then
+	If Not IsObj($objDoc) Then
 		_XMLError("No object passed to function _XMLCreateRootNodeWAttr")
-		Return SetError(1,15,-1)
+		Return SetError(1, 15, -1)
 	EndIf
 	Local $objChild, $objAttr, $objAttrVal
-	$objChild = $objDoc.createNode ($NODE_ELEMENT, $strNode, $strNameSpc)
+	$objChild = $objDoc.createNode($NODE_ELEMENT, $strNode, $strNameSpc)
 	If IsObj($objChild) Then
 		If $strData <> "" Then $objChild.text = $strData
-		If Not ($objDoc.documentElement.hasChildNodes ()) Then
+		If Not ($objDoc.documentElement.hasChildNodes()) Then
 			_AddFormat($objDoc)
 		EndIf
 		If IsArray($aAttr) And IsArray($aVal) Then
@@ -896,24 +896,24 @@ Func _XMLCreateRootNodeWAttr($strNode, $aAttr, $aVal, $strData = "", $strNameSpc
 				For $i = 0 To UBound($aAttr) - 1
 					If $aAttr[$i] = "" Then
 						_XMLError("Error creating child node: " & $strNode & @CRLF & " Attribute Name Cannot be NULL." & @CRLF)
-						Return SetError(1,0,-1)
+						Return SetError(1, 0, -1)
 					EndIf
-					$objAttr = $objDoc.createAttribute ($aAttr[$i]);, $strNameSpc)
-					$objChild.SetAttribute ($aAttr[$i], $aVal[$i])
+					$objAttr = $objDoc.createAttribute($aAttr[$i]) ;, $strNameSpc)
+					$objChild.SetAttribute($aAttr[$i], $aVal[$i])
 				Next
 			EndIf
 		Else
-			$objAttr = $objDoc.createAttribute ($aAttr)
-			$objChild.SetAttribute ($aAttr, $aVal)
+			$objAttr = $objDoc.createAttribute($aAttr)
+			$objChild.SetAttribute($aAttr, $aVal)
 		EndIf
-		$objDoc.documentElement.appendChild ($objChild)
-				If ($bXMLAUTOSAVE = True) Then $objDoc.save ($strFile)
+		$objDoc.documentElement.appendChild($objChild)
+		If ($bXMLAUTOSAVE = True) Then $objDoc.save($strFile)
 		_AddFormat($objDoc)
 		$objChild = 0
 		Return 1
 	EndIf
 	_XMLError("Failed to create root child with attributes: " & $strNode & @CRLF)
-	Return SetError(1,0,-1)
+	Return SetError(1, 0, -1)
 EndFunc   ;==>_XMLCreateRootNodeWAttr
 ;===============================================================================
 ; Function Name:	_XMLCreateChildNode
@@ -925,33 +925,33 @@ EndFunc   ;==>_XMLCreateRootNodeWAttr
 ; Return Value(s)			on error set error to 1 and returns -1
 ;===============================================================================
 Func _XMLCreateChildNode($strXPath, $strNode, $strData = "", $strNameSpc = "")
-	If not IsObj($objDoc) then
+	If Not IsObj($objDoc) Then
 		_XMLError("No object passed to function _XMLCreateChildNode")
-		Return SetError(1,16,-1)
+		Return SetError(1, 16, -1)
 	EndIf
 	Local $objParent, $objChild, $objNodeList
-		$objNodeList = $objDoc.selectNodes ($strXPath)
-		If IsObj($objNodeList) And $objNodeList.length > 0 Then
-			For $objParent In $objNodeList
-				If Not ($objParent.hasChildNodes ()) Then
-					_AddFormat($objDoc, $objParent)
-				EndIf
-				If $strNameSpc = "" Then
-					If Not ($objParent.namespaceURI = 0 Or $objParent.namespaceURI = "") Then $strNameSpc = $objParent.namespaceURI
-				EndIf
-				;ConsoleWrite("$strNameSpc=" & $strNameSpc & @LF)
-				$objChild = $objDoc.createNode ($NODE_ELEMENT, $strNode, $strNameSpc)
-				If $strData <> "" Then $objChild.text = $strData
-				$objParent.appendChild ($objChild)
+	$objNodeList = $objDoc.selectNodes($strXPath)
+	If IsObj($objNodeList) And $objNodeList.length > 0 Then
+		For $objParent In $objNodeList
+			If Not ($objParent.hasChildNodes()) Then
 				_AddFormat($objDoc, $objParent)
-			Next
-			If ($bXMLAUTOSAVE = True) Then $objDoc.save ($strFile)
-			$objParent = ""
-			$objChild = ""
-			Return 1
-		EndIf
+			EndIf
+			If $strNameSpc = "" Then
+				If Not ($objParent.namespaceURI = 0 Or $objParent.namespaceURI = "") Then $strNameSpc = $objParent.namespaceURI
+			EndIf
+			;ConsoleWrite("$strNameSpc=" & $strNameSpc & @LF)
+			$objChild = $objDoc.createNode($NODE_ELEMENT, $strNode, $strNameSpc)
+			If $strData <> "" Then $objChild.text = $strData
+			$objParent.appendChild($objChild)
+			_AddFormat($objDoc, $objParent)
+		Next
+		If ($bXMLAUTOSAVE = True) Then $objDoc.save($strFile)
+		$objParent = ""
+		$objChild = ""
+		Return 1
+	EndIf
 	_XMLError("Error creating child node: " & $strNode & @CRLF & $strXPath & " does not exist." & @CRLF)
-	Return SetError(1,0,-1)
+	Return SetError(1, 0, -1)
 EndFunc   ;==>_XMLCreateChildNode
 ;===============================================================================
 ; Function Name:	_XMLCreateChildNodeWAttr
@@ -985,76 +985,76 @@ EndFunc   ;==>_XMLCreateChildNodeWAttr
 ; Return Value(s)			0 on error and set error 1 or 2
 ;===============================================================================
 Func _XMLCreateChildWAttr($strXPath, $strNode, $aAttr, $aVal, $strData = "", $strNameSpc = "")
-	If not IsObj($objDoc) then
+	If Not IsObj($objDoc) Then
 		_XMLError("No object passed to function _XMLCreateChildWAttr")
-		Return SetError(1,18,-1)
+		Return SetError(1, 18, -1)
 	EndIf
 	Local $objParent, $objChild, $objAttr, $objAttrVal, $objNodeList
-		$objNodeList = $objDoc.selectNodes ($strXPath)
-		_DebugWrite("Node Selected")
-		If IsObj($objNodeList) And $objNodeList.length <> 0 Then
-			_DebugWrite("Entering if")
-			For $objParent In $objNodeList
-				If Not ($objParent.hasChildNodes ()) Then
-					_AddFormat($objDoc, $objParent)
-				EndIf
-				_DebugWrite("Entering for")
-				If $strNameSpc = "" Then
-					If Not ($objParent.namespaceURI = 0 Or $objParent.namespaceURI = "") Then $strNameSpc = $objParent.namespaceURI
-				EndIf
-				$objChild = $objDoc.createNode ($NODE_ELEMENT, $strNode, $strNameSpc)
-				If @error Then Return -1
-				If $strData <> "" Then $objChild.text = $strData
-				If IsArray($aAttr) And IsArray($aVal) Then
-					If UBound($aAttr) <> UBound($aVal) Then
-						_XMLError("Attribute and value mismatch" & @CRLF & "Please make sure each attribute has a matching value.")
-						Return SetError(2,0,-1)
-					Else
-						Local $i
-						For $i = 0 To UBound($aAttr) - 1
-							_DebugWrite("Entering inside for")
-							If $aAttr[$i] = "" Then
-								_XMLError("Error creating child node: " & $strNode & @CRLF & " Attribute Name Cannot be NULL." & @CRLF)
-								SetError(1)
-								Return -1
-							EndIf
-							_DebugWrite($aAttr[$i] & " " & $strNameSpc)
-							$objAttr = $objDoc.createAttribute ($aAttr[$i]);, $strNameSpc)
-							If @error Then ExitLoop
-							$objChild.SetAttribute ($aAttr[$i], $aVal[$i])
-							If @error <> 0 Then
-								_XMLError("Error creating child node: " & $strNode & @CRLF & $strXPath & " does not exist." & @CRLF)
-								Return SetError(1,0,-1)
-							EndIf
-							_DebugWrite("Looping inside for")
-						Next
-					EndIf
+	$objNodeList = $objDoc.selectNodes($strXPath)
+	_DebugWrite("Node Selected")
+	If IsObj($objNodeList) And $objNodeList.length <> 0 Then
+		_DebugWrite("Entering if")
+		For $objParent In $objNodeList
+			If Not ($objParent.hasChildNodes()) Then
+				_AddFormat($objDoc, $objParent)
+			EndIf
+			_DebugWrite("Entering for")
+			If $strNameSpc = "" Then
+				If Not ($objParent.namespaceURI = 0 Or $objParent.namespaceURI = "") Then $strNameSpc = $objParent.namespaceURI
+			EndIf
+			$objChild = $objDoc.createNode($NODE_ELEMENT, $strNode, $strNameSpc)
+			If @error Then Return -1
+			If $strData <> "" Then $objChild.text = $strData
+			If IsArray($aAttr) And IsArray($aVal) Then
+				If UBound($aAttr) <> UBound($aVal) Then
+					_XMLError("Attribute and value mismatch" & @CRLF & "Please make sure each attribute has a matching value.")
+					Return SetError(2, 0, -1)
 				Else
-					If IsArray($aAttr) Or IsArray($aVal) Then
-						_XMLError("Type non-Array and Array detected" & @LF)
-						Return SetError(1,0,-1)
-					EndIf
-					If $aAttr = "" Then
-						_XMLError("Attribute Name cannot be empty string." & @LF)
-						Return SetError(5,0,-1)
-					EndIf
-					_DebugWrite($aAttr & " " & $strNameSpc)
-					$objAttr = $objDoc.createAttribute ($aAttr);, $strNameSpc)
-					$objChild.SetAttribute ($aAttr, $aVal)
+					Local $i
+					For $i = 0 To UBound($aAttr) - 1
+						_DebugWrite("Entering inside for")
+						If $aAttr[$i] = "" Then
+							_XMLError("Error creating child node: " & $strNode & @CRLF & " Attribute Name Cannot be NULL." & @CRLF)
+							SetError(1)
+							Return -1
+						EndIf
+						_DebugWrite($aAttr[$i] & " " & $strNameSpc)
+						$objAttr = $objDoc.createAttribute($aAttr[$i]) ;, $strNameSpc)
+						If @error Then ExitLoop
+						$objChild.SetAttribute($aAttr[$i], $aVal[$i])
+						If @error <> 0 Then
+							_XMLError("Error creating child node: " & $strNode & @CRLF & $strXPath & " does not exist." & @CRLF)
+							Return SetError(1, 0, -1)
+						EndIf
+						_DebugWrite("Looping inside for")
+					Next
 				EndIf
-				$objParent.appendChild ($objChild)
-				_DebugWrite("Looping for")
-			Next
-			_AddFormat($objDoc, $objParent)
-					If ($bXMLAUTOSAVE = True) Then $objDoc.save ($strFile)
-			_DebugWrite("Saved")
-			$objParent = ""
-			$objChild = ""
-			_DebugWrite("Returning")
-			Return
-		EndIf
+			Else
+				If IsArray($aAttr) Or IsArray($aVal) Then
+					_XMLError("Type non-Array and Array detected" & @LF)
+					Return SetError(1, 0, -1)
+				EndIf
+				If $aAttr = "" Then
+					_XMLError("Attribute Name cannot be empty string." & @LF)
+					Return SetError(5, 0, -1)
+				EndIf
+				_DebugWrite($aAttr & " " & $strNameSpc)
+				$objAttr = $objDoc.createAttribute($aAttr) ;, $strNameSpc)
+				$objChild.SetAttribute($aAttr, $aVal)
+			EndIf
+			$objParent.appendChild($objChild)
+			_DebugWrite("Looping for")
+		Next
+		_AddFormat($objDoc, $objParent)
+		If ($bXMLAUTOSAVE = True) Then $objDoc.save($strFile)
+		_DebugWrite("Saved")
+		$objParent = ""
+		$objChild = ""
+		_DebugWrite("Returning")
+		Return
+	EndIf
 	_XMLError("Error creating child node: " & $strNode & @CRLF & $strXPath & " does not exist." & @CRLF)
-	Return SetError(1,0,-1)
+	Return SetError(1, 0, -1)
 EndFunc   ;==>_XMLCreateChildWAttr
 ;===============================================================================
 ; Function Name:	_XMLGetChildText
@@ -1065,32 +1065,32 @@ EndFunc   ;==>_XMLCreateChildWAttr
 ; Return Value(s)			array of Nodes or -1 on failure
 ;===============================================================================
 Func _XMLGetChildText($strXPath)
-	If not IsObj($objDoc) then
+	If Not IsObj($objDoc) Then
 		_XMLError("No object passed to function _XMLGetChildText")
-		Return SetError(1,19,-1)
+		Return SetError(1, 19, -1)
 	EndIf
 	Local $objNodeList, $arrResponse[1], $xmlerr
-		$objNodeList = $objDoc.selectSingleNode ($strXPath)
-		If Not IsObj($objNodeList) Then
-			_XMLError(@CRLF & "No Matching Nodes found")
-			$arrResponse[0] = 0
-			Return SetError(1,0,-1)
-		EndIf
-		If $objNodeList.hasChildNodes () Then
-			For $objChild In $objNodeList.childNodes ()
-				If $objChild.nodeType = $NODE_ELEMENT Then
-					_XMLArrayAdd($arrResponse, $objChild.baseName)
-				ElseIf $objChild.nodeType = $NODE_TEXT Then
-					_XMLArrayAdd($arrResponse, $objChild.text)
-				EndIf
-			Next
-			$arrResponse[0] = UBound($arrResponse) - 1
-			Return $arrResponse
-		EndIf
+	$objNodeList = $objDoc.selectSingleNode($strXPath)
+	If Not IsObj($objNodeList) Then
+		_XMLError(@CRLF & "No Matching Nodes found")
+		$arrResponse[0] = 0
+		Return SetError(1, 0, -1)
+	EndIf
+	If $objNodeList.hasChildNodes() Then
+		For $objChild In $objNodeList.childNodes()
+			If $objChild.nodeType = $NODE_ELEMENT Then
+				_XMLArrayAdd($arrResponse, $objChild.baseName)
+			ElseIf $objChild.nodeType = $NODE_TEXT Then
+				_XMLArrayAdd($arrResponse, $objChild.text)
+			EndIf
+		Next
+		$arrResponse[0] = UBound($arrResponse) - 1
+		Return $arrResponse
+	EndIf
 	$arrResponse[0] = 0
 	$xmlerr = @CRLF & "No Child Text Nodes found"
 	_XMLError("Error Selecting Node(s): " & $strXPath & $xmlerr)
-	Return SetError(1,0,-1)
+	Return SetError(1, 0, -1)
 EndFunc   ;==>_XMLGetChildText
 ;===============================================================================
 ; Function Name:	_XMLGetChildNodes
@@ -1101,21 +1101,21 @@ EndFunc   ;==>_XMLGetChildText
 ; Return Value(s)			array of Nodes or -1 on failure
 ;===============================================================================
 Func _XMLGetChildNodes($strXPath)
-	If not IsObj($objDoc) then
+	If Not IsObj($objDoc) Then
 		_XMLError("No object passed to function _XMLGetChildNodes")
-		Return SetError(1,20,-1)
+		Return SetError(1, 20, -1)
 	EndIf
 	Local $objNodeList, $arrResponse[1], $xmlerr
-	$objNodeList = $objDoc.selectSingleNode ($strXPath)
+	$objNodeList = $objDoc.selectSingleNode($strXPath)
 	If Not IsObj($objNodeList) Then
 		_XMLError(@LF & "No Matching Nodes found")
 		$arrResponse[0] = 0
-		Return SetError(1,0,-1)
+		Return SetError(1, 0, -1)
 	EndIf
-	If $objNodeList.hasChildNodes () Then
-		For $objChild In $objNodeList.childNodes ()
-			If $objChild.nodeType () = $NODE_ELEMENT Then
-				_DebugWrite($objChild.NamespaceURI &"::"& $objChild.baseName &@LF)
+	If $objNodeList.hasChildNodes() Then
+		For $objChild In $objNodeList.childNodes()
+			If $objChild.nodeType() = $NODE_ELEMENT Then
+				_DebugWrite($objChild.NamespaceURI & "::" & $objChild.baseName & @LF)
 				_XMLArrayAdd($arrResponse, $objChild.baseName)
 			EndIf
 		Next
@@ -1125,7 +1125,7 @@ Func _XMLGetChildNodes($strXPath)
 	$arrResponse[0] = 0
 	$xmlerr = @LF & "No Child Nodes found"
 	_XMLError("Error Selecting Node(s): " & $strXPath & $xmlerr)
-	Return SetError(1,0,-1)
+	Return SetError(1, 0, -1)
 EndFunc   ;==>_XMLGetChildNodes
 ;===============================================================================
 ; Function Name:	_XMLGetChildren
@@ -1147,35 +1147,35 @@ EndFunc   ;==>_XMLGetChildNodes
 ; Author(s):		Stephen Podhajecki <gehossafats@netmdc.com>
 ;===============================================================================
 Func _XMLGetChildren($strXPath)
-	If not IsObj($objDoc) then
+	If Not IsObj($objDoc) Then
 		_XMLError("No object passed to function _XMLGetChildren")
-		Return SetError(1,21,-1)
+		Return SetError(1, 21, -1)
 	EndIf
 	Local $objNodeList, $arrResponse[1][3], $xmlerr
-	$objNodeList = $objDoc.selectSingleNode ($strXPath)
+	$objNodeList = $objDoc.selectSingleNode($strXPath)
 	If Not IsObj($objNodeList) Then
 		_XMLError(@LF & "No Matching Nodes found")
-		$arrResponse[0][0]= 0
-		Return SetError(1,0,-1)
+		$arrResponse[0][0] = 0
+		Return SetError(1, 0, -1)
 	EndIf
-	If $objNodeList.hasChildNodes () Then
-		For $objChild In $objNodeList.childNodes ()
-			If $objChild.nodeType () = $NODE_ELEMENT Then
-				Local $dims = UBound($arrResponse,1)
-				ReDim $arrResponse[$dims+1][3]
+	If $objNodeList.hasChildNodes() Then
+		For $objChild In $objNodeList.childNodes()
+			If $objChild.nodeType() = $NODE_ELEMENT Then
+				Local $dims = UBound($arrResponse, 1)
+				ReDim $arrResponse[$dims + 1][3]
 				$arrResponse[$dims][0] = $objChild.baseName
 				$arrResponse[$dims][1] = $objChild.text
 				$arrResponse[$dims][2] = $objChild.NamespaceURI
 				;_XMLArrayAdd($arrResponse, $objChild.baseName)
 			EndIf
 		Next
-		$arrResponse[0][0] = UBound($arrResponse,1) - 1
+		$arrResponse[0][0] = UBound($arrResponse, 1) - 1
 		Return $arrResponse
 	EndIf
 	$arrResponse[0][0] = 0
 	$xmlerr = @LF & "No Child Nodes found"
 	_XMLError("Error Selecting Node(s): " & $strXPath & $xmlerr)
-	Return SetError(1,0,-1)
+	Return SetError(1, 0, -1)
 EndFunc   ;==>_XMLGetChildren
 
 ;===============================================================================
@@ -1190,12 +1190,12 @@ EndFunc   ;==>_XMLGetChildren
 ; on error set error to 1 and returns -1
 ;===============================================================================
 Func _XMLGetNodeCount($strXPath, $strQry = "", $iNodeType = 1)
-	If not IsObj($objDoc) then
+	If Not IsObj($objDoc) Then
 		_XMLError("No object passed to function _XMLGetNodeCount")
-		Return SetError(1,22,-1)
+		Return SetError(1, 22, -1)
 	EndIf
 	Local $objQueryNodes, $objNode, $nodeCount = 0, $errMsg
-	$objQueryNodes = $objDoc.selectNodes ($strXPath & $strQry)
+	$objQueryNodes = $objDoc.selectNodes($strXPath & $strQry)
 	If @error = 0 And $objQueryNodes.length > 0 Then
 		For $objNode In $objQueryNodes
 			If $objNode.nodeType = $iNodeType Then $nodeCount = $nodeCount + 1
@@ -1224,12 +1224,12 @@ EndFunc   ;==>_XMLGetNodeCount
 ;					on error set error to 1 and returns -1
 ;===============================================================================
 Func _XMLGetAllAttribIndex($strXPath, ByRef $aName, ByRef $aValue, $strQry = "", $NodeIndex = 0)
-	If not IsObj($objDoc) then
+	If Not IsObj($objDoc) Then
 		_XMLError("No object passed to function _XMLGetAllAttribIndex")
-		Return SetError(1,23,-1)
+		Return SetError(1, 23, -1)
 	EndIf
 	Local $objNodeList, $objQueryNodes, $arrResponse[2][1], $i
-	$objQueryNodes = $objDoc.selectNodes ($strXPath & $strQry)
+	$objQueryNodes = $objDoc.selectNodes($strXPath & $strQry)
 	If $objQueryNodes.length > 0 Then
 		$objNodeList = $objQueryNodes.item($NodeIndex).attributes
 		_DebugWrite("GetAllAttribIndex " & $objNodeList.length)
@@ -1237,15 +1237,15 @@ Func _XMLGetAllAttribIndex($strXPath, ByRef $aName, ByRef $aValue, $strQry = "",
 		ReDim $aName[$objNodeList.length]
 		ReDim $aValue[$objNodeList.length]
 		For $i = 0 To $objNodeList.length - 1
-			$arrResponse[0][$i] = $objNodeList.item ($i).nodeName
-			$arrResponse[1][$i] = $objNodeList.item ($i).Value
-			$aName[$i] = $objNodeList.item ($i).nodeName
-			$aValue[$i] = $objNodeList.item ($i).Value
+			$arrResponse[0][$i] = $objNodeList.item($i).nodeName
+			$arrResponse[1][$i] = $objNodeList.item($i).Value
+			$aName[$i] = $objNodeList.item($i).nodeName
+			$aValue[$i] = $objNodeList.item($i).Value
 		Next
 		Return $arrResponse
 	EndIf
 	_XMLError("Error retrieving attributes for: " & $strXPath & @CRLF)
-	Return SetError(1,0,-1)
+	Return SetError(1, 0, -1)
 EndFunc   ;==>_XMLGetAllAttribIndex
 ;===============================================================================
 ; Function Name: _XMLGetPath
@@ -1256,16 +1256,16 @@ EndFunc   ;==>_XMLGetAllAttribIndex
 ; Return Value(s): array of fields text values -1 on failure
 ;===============================================================================
 Func _XMLGetPath($strXPath)
-	If not IsObj($objDoc) then
+	If Not IsObj($objDoc) Then
 		_XMLError("No object passed to function _XMLGetPath")
-		Return SetError(1,24,-1)
+		Return SetError(1, 24, -1)
 	EndIf
 	If $DOMVERSION < 4 Then
 		_XMLError("Error DOM Version: " & "MSXML Version 4 or greater required for this function")
-		Return SetError(1,0,-1)
+		Return SetError(1, 0, -1)
 	EndIf
 	Local $objNodeList, $arrResponse[1], $objNodeChild, $xmlerr, $nodepath, $ns
-	$objNodeList = $objDoc.selectNodes ($strXPath)
+	$objNodeList = $objDoc.selectNodes($strXPath)
 	If $objNodeList.length > 0 Then
 		_DebugWrite("GetPath list length:" & $objNodeList.length)
 		For $objNode In $objNodeList
@@ -1273,24 +1273,24 @@ Func _XMLGetPath($strXPath)
 			$nodepath = ""
 			$nodepathtag = ""
 			If $objNode.nodeType <> $NODE_DOCUMENT Then
-				$ns = $objNode.namespaceURI ()
-				If $ns <> ""  Then
+				$ns = $objNode.namespaceURI()
+				If $ns <> "" Then
 					$ns = StringRight($ns, StringLen($ns) - StringInStr($ns, "/", 0, -1)) & ":"
 				EndIf
-				if $ns =0 then $ns =""
-				$nodepath = "/" & $ns & $objNode.nodeName () & $nodepath
+				If $ns = 0 Then $ns = ""
+				$nodepath = "/" & $ns & $objNode.nodeName() & $nodepath
 			EndIf
 			Do
-				$objParent = $objNode1.parentNode ()
-				_DebugWrite("parent " & $objParent.nodeName () & @LF)
+				$objParent = $objNode1.parentNode()
+				_DebugWrite("parent " & $objParent.nodeName() & @LF)
 				If $objParent.nodeType <> $NODE_DOCUMENT Then
-					$ns = $objParent.namespaceURI ()
+					$ns = $objParent.namespaceURI()
 					If $ns <> "" Then
 						;$ns = StringRight($ns, StringLen($ns) - StringInStr($ns, "/", 0, -1)) & ":"
-						$ns &=":"
+						$ns &= ":"
 					EndIf
-					if $ns =0 then $ns= ""
-					$nodepath = "/" &$ns  & $objParent.nodeName ()& $nodepath
+					If $ns = 0 Then $ns = ""
+					$nodepath = "/" & $ns & $objParent.nodeName() & $nodepath
 					$objNode1 = $objParent
 				Else
 					$objNode1 = 0
@@ -1305,7 +1305,7 @@ Func _XMLGetPath($strXPath)
 	EndIf
 	$xmlerr = @CRLF & "No matching node(s)found!"
 	_XMLError("Error Retrieving: " & $strXPath & $xmlerr)
-	Return SetError(1,0,-1)
+	Return SetError(1, 0, -1)
 EndFunc   ;==>_XMLGetPath
 
 ;===============================================================================
@@ -1319,23 +1319,23 @@ EndFunc   ;==>_XMLGetPath
 ; Note(s)			:
 ;===============================================================================
 Func _XMLGetPathInternal($objNode)
-	If not IsObj($objDoc) then
+	If Not IsObj($objDoc) Then
 		_XMLError("No object passed to function _XMLGetPathInternal")
-		Return SetError(1,25,-1)
+		Return SetError(1, 25, -1)
 	EndIf
 	Local $nodepath, $na, $objParent
 	If IsObj($objNode) Then
 		$nodepath = "/" & $objNode.baseName
 		Do
-			$objParent = $objNode.parentNode ()
-			_DebugWrite("parent" & $objParent.nodeName () & ">" & @LF)
+			$objParent = $objNode.parentNode()
+			_DebugWrite("parent" & $objParent.nodeName() & ">" & @LF)
 			If $objParent.nodeType <> $NODE_DOCUMENT Then
-				$ns = $objParent.namespaceURI ()
+				$ns = $objParent.namespaceURI()
 				If $ns = 0 Then $ns = ""
 				If $ns <> "" Then
 					$ns = StringRight($ns, StringLen($ns) - StringInStr($ns, "/", 0, -1)) & ":"
 				EndIf
-				$nodepath = "/" & $ns & $objParent.nodeName () & $nodepath
+				$nodepath = "/" & $ns & $objParent.nodeName() & $nodepath
 				$objNode = $objParent
 			Else
 				$objNode = 0
@@ -1359,9 +1359,9 @@ EndFunc   ;==>_XMLGetPathInternal
 ; Return Value(s)
 ;===============================================================================
 Func _XMLReplaceChild($objOldNode, $objNewNode, $ns = "")
-	If not IsObj($objDoc) then
+	If Not IsObj($objDoc) Then
 		_XMLError("No object passed to function _XMLReplaceChild")
-		Return SetError(1,26,-1)
+		Return SetError(1, 26, -1)
 	EndIf
 	If $objOldNode = "" Or $objNewNode = "" Then Return SetError(1)
 	Local $nodeRoot
@@ -1373,21 +1373,21 @@ Func _XMLReplaceChild($objOldNode, $objNewNode, $ns = "")
 	With $objDoc
 		;;.Load "c:\books.xml"
 		$nodeRoot = .documentElement
-		$oldNodes = $nodeRoot.selectNodes ($objOldNode)
+		$oldNodes = $nodeRoot.selectNodes($objOldNode)
 		;'For each Node
 		For $nodeOld In $oldNodes
 			;Create a New element
-			$nodeNew = .createNode ($NODE_ELEMENT, $objNewNode, $ns)
+			$nodeNew = .createNode($NODE_ELEMENT, $objNewNode, $ns)
 			;Copy attributes
 			For $nodeTemp In $nodeOld.Attributes
-				$nodeNew.Attributes.setNamedItem ($nodeTemp.cloneNode (True))
+				$nodeNew.Attributes.setNamedItem($nodeTemp.cloneNode(True))
 			Next
 			;Copy Child Nodes
 			For $nodeTemp In $nodeOld.childNodes
-				$nodeNew.appendChild ($nodeTemp)
+				$nodeNew.appendChild($nodeTemp)
 			Next
 			;Replace with the renamed node
-			If IsObj($nodeOld.parentNode.replaceChild ($nodeNew, $nodeOld)) Then $bSuccess = 1
+			If IsObj($nodeOld.parentNode.replaceChild($nodeNew, $nodeOld)) Then $bSuccess = 1
 			If Not ($objDoc.parseError.errorCode = 0) Then
 				_XMLError("_XMLReplaceChild:" & @LF & "Error Replacing Child: " & _
 						$objDoc.parseError.errorCode & _
@@ -1398,7 +1398,7 @@ Func _XMLReplaceChild($objOldNode, $objNewNode, $ns = "")
 				$bSuccess = True
 			EndIf
 		Next
-		.save ($strFile)
+		.save($strFile)
 	EndWith
 	$nodeRoot = 0
 	$nodeOld = 0
@@ -1427,7 +1427,7 @@ Func _XMLSchemaValidate($sXMLFile, $ns, $sXSDFile)
 		MsgBox(266288, "XML Error", "Unable to instantiate the XML object" & @LF & "Please check your components.")
 		Return SetError(-1)
 	EndIf
-	$cache.add ($ns, $sXSDFile)
+	$cache.add($ns, $sXSDFile)
 	$xmldoc = ObjCreate("Msxml2.DOMDocument." & $DOMVERSION & ".0")
 	If Not IsObj($xmldoc) Then
 		MsgBox(266288, "XML Error", "Unable to instantiate the XML object" & @LF & "Please check your components.")
@@ -1435,7 +1435,7 @@ Func _XMLSchemaValidate($sXMLFile, $ns, $sXSDFile)
 	EndIf
 	$xmldoc.async = False
 	$xmldoc.schemas = $cache
-	$xmldoc.load ($sXMLFile)
+	$xmldoc.load($sXMLFile)
 	If Not ($xmldoc.parseError.errorCode = 0) Then
 		_XMLError("_XMLSchemaValidate:" & @LF & "Error: " & $xmldoc.parseError.errorCode & " " & $xmldoc.parseError.reason)
 		Return SetError($xmldoc.parseError.errorCode)
@@ -1524,7 +1524,7 @@ EndFunc   ;==>_ComErrorHandler
 ;===============================================================================
 Func _DebugWrite($message, $flag = @LF)
 	If $debugging Then
-		ConsoleWrite(StringFormat($message)&$flag)
+		ConsoleWrite(StringFormat($message) & $flag)
 	EndIf
 EndFunc   ;==>_DebugWrite
 ;===============================================================================
@@ -1573,13 +1573,13 @@ EndFunc   ;==>_XMLUDFVersion
 ; Author(s):		Stephen Podhajecki <gehossafats at netmdc dot com>
 ; Note(s):
 ;===============================================================================
-Func _XMLTransform($oXMLDoc="", $Style = "", $szNewDoc = "")
+Func _XMLTransform($oXMLDoc = "", $Style = "", $szNewDoc = "")
 	If $oXMLDoc = "" Then
 		$oXMLDoc = $objDoc
 	EndIf
-	If not IsObj($oXMLDoc) then
+	If Not IsObj($oXMLDoc) Then
 		_XMLError("No object passed to function _XMLSetAttrib")
-		Return SetError(1,29,-1)
+		Return SetError(1, 29, -1)
 	EndIf
 	Local $bIndented = False
 	Local $xslt = ObjCreate("MSXML2.XSLTemplate." & $DOMVERSION & ".0")
@@ -1588,18 +1588,18 @@ Func _XMLTransform($oXMLDoc="", $Style = "", $szNewDoc = "")
 	Local $xslProc
 	$xslDoc.async = False
 	If FileExists($Style) Then
-		_DebugWrite("LoadXML:1:" & $xslDoc.load ($Style) & @LF)
+		_DebugWrite("LoadXML:1:" & $xslDoc.load($Style) & @LF)
 	Else
-		_DebugWrite("LoadXML:2:" & $xslDoc.loadXML (_GetDefaultStyleSheet()) & @LF)
+		_DebugWrite("LoadXML:2:" & $xslDoc.loadXML(_GetDefaultStyleSheet()) & @LF)
 	EndIf
 	If $xslDoc.parseError.errorCode <> 0 Then
 		_XMLError("Error Transforming NodeToObject: " & $xslDoc.parseError.reason)
 	EndIf
-	If Not FileExists("XSLFile.xsl") Then FileWrite("XSLFile.xsl", $xslDoc.xml ())
+	If Not FileExists("XSLFile.xsl") Then FileWrite("XSLFile.xsl", $xslDoc.xml())
 	$xslt.stylesheet = $xslDoc
-	$xslProc = $xslt.createProcessor ()
+	$xslProc = $xslt.createProcessor()
 	$xslProc.input = $objDoc
-	$oXMLDoc.transformNodeToObject ($xslDoc, $xmldoc)
+	$oXMLDoc.transformNodeToObject($xslDoc, $xmldoc)
 	If $oXMLDoc.parseError.errorCode <> 0 Then
 		_XMLError("_XMLTransform:" & @LF & "Error Transforming NodeToObject: " & $oXMLDoc.parseError.reason)
 		$bIndented = False
@@ -1608,14 +1608,14 @@ Func _XMLTransform($oXMLDoc="", $Style = "", $szNewDoc = "")
 	EndIf
 	If $bIndented Then
 		If $szNewDoc <> "" Then
-			$xmldoc.save ($szNewDoc)
+			$xmldoc.save($szNewDoc)
 			If $xmldoc.parseError.errorCode <> 0 Then
 				_XMLError("_XMLTransform:" & @LF & "Error Saving: " & $xmldoc.parseError.reason)
 				$bIndented = False
 			EndIf
 		Else
-			$xmldoc.save ($strFile)
-			$oXMLDoc.Load ($strFile)
+			$xmldoc.save($strFile)
+			$oXMLDoc.Load($strFile)
 			If $oXMLDoc.parseError.errorCode <> 0 Then
 				_XMLError("_XMLTransform:" & @LF & "Error Saving: " & $oXMLDoc.parseError.reason)
 				$bIndented = False
@@ -1664,17 +1664,17 @@ EndFunc   ;==>_GetDefaultStyleSheet
 ; Note(s):			just break up the tags, no indenting is done here.
 ;===============================================================================
 Func _AddFormat($objDoc, $objParent = "")
-	If not IsObj($objDoc) then
+	If Not IsObj($objDoc) Then
 		_XMLError("No object passed to function _XMLAddFormat")
-		Return SetError(1,30,-1)
+		Return SetError(1, 30, -1)
 	EndIf
-	$objFormat = $objDoc.createTextNode (@CR)
+	$objFormat = $objDoc.createTextNode(@CR)
 	If IsObj($objParent) Then
-		$objParent.appendChild ($objFormat)
+		$objParent.appendChild($objFormat)
 	Else
-		$objDoc.documentElement.appendChild ($objFormat)
+		$objDoc.documentElement.appendChild($objFormat)
 	EndIf
-			If ($bXMLAUTOSAVE = True) Then $objDoc.save ($strFile)
+	If ($bXMLAUTOSAVE = True) Then $objDoc.save($strFile)
 EndFunc   ;==>_AddFormat
 ;===============================================================================
 ; Function Name:	_XMLSetAutoSave
@@ -1688,13 +1688,13 @@ EndFunc   ;==>_AddFormat
 ;===============================================================================
 Func _XMLSetAutoSave($bSave = True)
 	Local $oldSave = $bXMLAUTOSAVE
-	if $bSave = False Then
+	If $bSave = False Then
 		$bXMLAUTOSAVE = True
 	Else
 		$bXMLAUTOSAVE = False
 	EndIf
 	Return $oldSave
-EndFunc
+EndFunc   ;==>_XMLSetAutoSave
 ;===============================================================================
 ; Function Name:	_XMLSaveDoc
 ; Description:		Save the current xml doc
@@ -1705,10 +1705,10 @@ EndFunc
 ; Author(s):		Stephen Podhajecki <gehossafats a t netmdc.com>
 ; Note(s):			Defaults to the current filename.
 ;===============================================================================
-Func _XMLSaveDoc($sFile="")
-	if $sFile = "" Then $sFile = $strFile
+Func _XMLSaveDoc($sFile = "")
+	If $sFile = "" Then $sFile = $strFile
 	$objDoc.save($sFile)
-EndFunc
+EndFunc   ;==>_XMLSaveDoc
 
 ;===============================================================================
 ; Function Name:	_XMLNodeExists
@@ -1725,17 +1725,17 @@ EndFunc
 ; Note(s):			Returns the number of nodes found (could be greater than 1)
 ;===============================================================================
 Func _XMLNodeExists($strXPath)
-	If not IsObj($objDoc) then
+	If Not IsObj($objDoc) Then
 		_XMLError("No object passed to function _XMLNodeExists")
-		Return SetError(1,31,0)
+		Return SetError(1, 31, 0)
 	EndIf
 	Local $objNode, $iCount
-	Local $objNode =  $objDoc.SelectNodes($strXPath)
+	Local $objNode = $objDoc.SelectNodes($strXPath)
 	If IsObj($objNode) Then $iCount = $objNode.length
 	$objNode = 0
-	if $iCount Then Return $iCount
-	Return SetError(2,0,0)
-EndFunc
+	If $iCount Then Return $iCount
+	Return SetError(2, 0, 0)
+EndFunc   ;==>_XMLNodeExists
 ; =======================================================================
 ; Preprocessed included functions...
 ; =======================================================================

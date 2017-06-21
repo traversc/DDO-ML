@@ -1,4 +1,19 @@
-#AutoIt3Wrapper_icon=icon.ico
+#cs
+	[FileVersion]
+#ce
+#Region ;**** Directives created by AutoIt3Wrapper_GUI ****
+#AutoIt3Wrapper_Icon=icon.ico
+#AutoIt3Wrapper_UseX64=n
+#AutoIt3Wrapper_Res_Field=ProductName|DDO-ML
+#AutoIt3Wrapper_Res_Description=An alternate DDO launcher
+#AutoIt3Wrapper_Res_Fileversion=1.4.1.0
+#AutoIt3Wrapper_Add_Constants=n
+#AutoIt3Wrapper_Run_Au3Stripper=y
+#Au3Stripper_Parameters=/rsln /mo
+#EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
+; *** Start added by AutoIt3Wrapper ***
+#include <TrayConstants.au3>
+; *** End added by AutoIt3Wrapper ***
 
 #include <String.au3>
 #include <Crypt.au3>
@@ -31,10 +46,18 @@ $lamannia_folder = IniRead($ini_file, "startup", "lamannia_directory", "")
 $preload = IniRead($ini_file, "startup", "usepreloader", "0")
 $debug = IniRead($ini_file, "startup", "debug", "0")
 
+Func _GetVersion()
+	If @Compiled Then
+		Return FileGetVersion(@AutoItExe)
+	Else
+		Return IniRead(@ScriptFullPath, "FileVersion", "#AutoIt3Wrapper_Res_Fileversion", "0.0.0.0")
+	EndIf
+EndFunc   ;==>_GetVersion
+
 $set_directory_item = TrayCreateItem("Set Directory")
 TrayItemSetOnEvent(-1, "set_directory")
 Func set_directory()
-	$default_folder = stringReplace(FileSelectFolder("Locate DDO Folder", $default_folder), "\","\\")
+	$default_folder = StringReplace(FileSelectFolder("Locate DDO Folder", $default_folder), "\", "\\")
 	IniWrite($ini_file, "Startup", "directory", $default_folder)
 	TrayItemSetState($set_directory_item, $TRAY_UNCHECKED)
 EndFunc   ;==>set_directory
@@ -50,24 +73,24 @@ EndFunc   ;==>set_server
 $set_lamannia_directory_item = TrayCreateItem("Set Lamannia Directory")
 TrayItemSetOnEvent(-1, "set_lamannia_directory")
 Func set_lamannia_directory()
-	$lamannia_folder = stringReplace(FileSelectFolder("Locate Lamannia Folder", $lamannia_folder), "\","\\")
+	$lamannia_folder = StringReplace(FileSelectFolder("Locate Lamannia Folder", $lamannia_folder), "\", "\\")
 	IniWrite($ini_file, "Startup", "lamannia_directory", $lamannia_folder)
 	TrayItemSetState($set_lamannia_directory_item, $TRAY_UNCHECKED)
 EndFunc   ;==>set_lamannia_directory
 
 $set_preload_item = TrayCreateItem("Use Preloader")
 TrayItemSetOnEvent(-1, "set_preload")
-if $preload == 1 Then
-	TrayItemSetState($set_preload_item,$TRAY_CHECKED)
+If $preload == 1 Then
+	TrayItemSetState($set_preload_item, $TRAY_CHECKED)
 EndIf
 Func set_preload()
-    If BitAND(TrayItemGetState($set_preload_item), $TRAY_CHECKED) = $TRAY_CHECKED Then
+	If BitAND(TrayItemGetState($set_preload_item), $TRAY_CHECKED) = $TRAY_CHECKED Then
 		TrayItemSetState($set_preload_item, $TRAY_UNCHECKED)
 		$preload = 0
-    Else
-        TrayItemSetState($set_preload_item, $TRAY_CHECKED)
+	Else
+		TrayItemSetState($set_preload_item, $TRAY_CHECKED)
 		$preload = 1
-    EndIf
+	EndIf
 	IniWrite($ini_file, "Startup", "usepreloader", $preload)
 	; TrayItemSetState($set_preload_item, $TRAY_UNCHECKED)
 EndFunc   ;==>set_preload
@@ -99,29 +122,29 @@ EndFunc   ;==>set_background_launch
 $exit_item = TrayCreateItem("Exit")
 TrayItemSetOnEvent(-1, "_exit")
 Func _exit()
-	if $gui <> 0 then
-	$pos = wingetpos($gui)
-	IniWrite($ini_file, "startup", "x", $pos[0])
-	IniWrite($ini_file, "startup", "y", $pos[1])
-	$pos = wingetclientsize($gui)
-	IniWrite($ini_file, "startup", "width", $pos[0])
-	IniWrite($ini_file, "startup", "height", $pos[1])
-EndIf
+	If $gui <> 0 Then
+		$pos = WinGetPos($gui)
+		IniWrite($ini_file, "startup", "x", $pos[0])
+		IniWrite($ini_file, "startup", "y", $pos[1])
+		$pos = WinGetClientSize($gui)
+		IniWrite($ini_file, "startup", "width", $pos[0])
+		IniWrite($ini_file, "startup", "height", $pos[1])
+	EndIf
 
 	Exit 0
 EndFunc   ;==>_exit
 
 If IniRead($ini_file, "startup", "ckey", "") == "" Then
-   $ckey = ""
-   Dim $aSpace[3]
-   $digits = 15
-   For $i = 1 To $digits
-	   $aSpace[0] = Chr(Random(65, 90, 1)) ;A-Z
-	   $aSpace[1] = Chr(Random(97, 122, 1)) ;a-z
-	   $aSpace[2] = Chr(Random(48, 57, 1)) ;0-9
-	   $ckey &= $aSpace[Random(0, 2, 1)]
-   Next
-   IniWrite($ini_file, "startup", "ckey", $ckey)
+	$ckey = ""
+	Dim $aSpace[3]
+	$digits = 15
+	For $i = 1 To $digits
+		$aSpace[0] = Chr(Random(65, 90, 1)) ;A-Z
+		$aSpace[1] = Chr(Random(97, 122, 1)) ;a-z
+		$aSpace[2] = Chr(Random(48, 57, 1)) ;0-9
+		$ckey &= $aSpace[Random(0, 2, 1)]
+	Next
+	IniWrite($ini_file, "startup", "ckey", $ckey)
 EndIf
 $ckey = IniRead($ini_file, "startup", "ckey", "")
 
@@ -146,13 +169,13 @@ $x = IniRead($ini_file, "startup", "x", "-1")
 $y = IniRead($ini_file, "startup", "y", "-1")
 $width = IniRead($ini_file, "startup", "width", "140")
 $height = IniRead($ini_file, "startup", "height", "180")
-$gui = GUICreate("DDO-ML", $width, $height, $x, $y, BitOR($GUI_SS_DEFAULT_GUI, $WS_SIZEBOX), BitOR($WS_EX_TOOLWINDOW,$WS_EX_TOPMOST,0x08000000))
+$gui = GUICreate("DDO-ML", $width, $height, $x, $y, BitOR($GUI_SS_DEFAULT_GUI, $WS_CAPTION, $WS_SYSMENU, $WS_MINIMIZEBOX, $WS_SIZEBOX))
 WinSetTrans($gui, "", 200)
 $aiGUISize = WinGetClientSize($gui)
 
 $sList = GUICtrlCreateListView("", 0, 0, $aiGUISize[0], $aiGUISize[1], BitOR($LVS_REPORT, $LVS_SINGLESEL, $LVS_NOSORTHEADER, $LVS_NOSCROLL))
 GUICtrlSetFont(-1, 8)
-_GUICtrlListView_AddColumn($sList, "Ver. 0.1", 180)
+_GUICtrlListView_AddColumn($sList, "Ver. " & _GetVersion(), 180)
 
 Dim $label_controls[$short_count]
 For $i = 1 To $short_count Step 1
@@ -212,16 +235,16 @@ Func launch()
 		$user = _xmlGetattrib("shortcut[" & $i & "]/account[" & $acc & "]", "user")
 		$pass = _xmlGetattrib("shortcut[" & $i & "]/account[" & $acc & "]/pass", "value")
 		$subscription = _xmlGetattrib("shortcut[" & $i & "]/account[" & $acc & "]/subscription", "value")
-		if @error Then
-		   $subscription = ""
+		If @error Then
+			$subscription = ""
 		EndIf
-		if $pass == "" Then
-		   $pass = _xmlGetattrib("shortcut[" & $i & "]/account[" & $acc & "]/pass", "encrypted_value")
-		   $pass = _HexToString ( $pass )
-		   $pass = _Crypt_DecryptData ( $pass, $ckey, $CALG_AES_256 )
-		   ;consolewrite($pass & @CRLF)
-		   $pass = binarytostring($pass)
-		   ;consolewrite($pass)
+		If $pass == "" Then
+			$pass = _xmlGetattrib("shortcut[" & $i & "]/account[" & $acc & "]/pass", "encrypted_value")
+			$pass = _HexToString($pass)
+			$pass = _Crypt_DecryptData($pass, $ckey, $CALG_AES_256)
+			;consolewrite($pass & @CRLF)
+			$pass = BinaryToString($pass)
+			;consolewrite($pass)
 		EndIf
 
 		$xml_server = _XMLGetattrib("shortcut[" & $i & "]/account[" & $acc & "]/server", "value")
@@ -238,28 +261,28 @@ Func launch()
 		$character[$acc - 1] = _xmlGetattrib("shortcut[" & $i & "]/account[" & $acc & "]/character", "value")
 		$tempstring = 'ddolauncher.exe' & ' -s ' & $server & ' -g "' & $ddo_folder & '" -u "' & $user & '" -a "' & $pass & '" -z "' & $subscription & '"'
 
-		 if $debug == 1 Then
-			_FileWriteLog ( "debug.txt", $tempstring )
-		 EndIf
+		If $debug == 1 Then
+			_FileWriteLog("debug.txt", $tempstring)
+		EndIf
 
 		$py_handle = Run($tempstring, "", @SW_HIDE, 0x6)
 		_GUICtrlListView_SetColumn($sList, 0, "Login " & $user)
-		local $timer = timerInit()
+		Local $timer = TimerInit()
 		While 1
 			$py_out[$acc - 1] = $py_out[$acc - 1] & StdoutRead($py_handle)
 			If @error Then ExitLoop
-			sleep(100)
-			if TimerDiff($timer) > $login_timeout Then
+			Sleep(100)
+			If TimerDiff($timer) > $login_timeout Then
 				_GUICtrlListView_SetColumn($sList, 0, "Auth. timeout " & $user)
-				consoleWrite($py_out[$acc - 1])
+				ConsoleWrite($py_out[$acc - 1])
 				ExitLoop
 				;to do: write log file
 			EndIf
 		WEnd
 
-		 if $debug == 1 Then
-			_FileWriteLog ( "debug.txt", $py_out[$acc - 1] )
-		 EndIf
+		If $debug == 1 Then
+			_FileWriteLog("debug.txt", $py_out[$acc - 1])
+		EndIf
 	Next
 
 	If $background_launch == 1 Then
@@ -268,30 +291,30 @@ Func launch()
 		WinSetOnTop($active, "", 1)
 	EndIf
 	For $acc = 1 To $acc_count Step 1
-		If Not StringInStr($py_out[$acc - 1] , "dndclient.exe") Then
+		If Not StringInStr($py_out[$acc - 1], "dndclient.exe") Then
 			_GUICtrlListView_SetColumn($sList, 0, "Error " & $user)
 			;Exit 1
 		Else
 			If $character[$acc - 1] <> "" Then
-				$py_out[$acc - 1]  = $py_out[$acc - 1]  & " -u " & $character[$acc - 1]
+				$py_out[$acc - 1] = $py_out[$acc - 1] & " -u " & $character[$acc - 1]
 			EndIf
 			If $preload == 1 Then
 				_GUICtrlListView_SetColumn($sList, 0, "Preloading ...")
 				; _FileWriteLog ( "debug.txt", "preload.exe" & ' "' & $ddo_folder & "\\client_general.dat" & '"'& ' "' & $ddo_folder & "\\client_gamelogic.dat" & '"')
-				RunWait("preload.exe" & ' "' & $ddo_folder & "\\client_general.dat" & '"'& ' "' & $ddo_folder & "\\client_gamelogic.dat" & '"', @workingdir, @sw_hide)
+				RunWait("preload.exe" & ' "' & $ddo_folder & "\\client_general.dat" & '"' & ' "' & $ddo_folder & "\\client_gamelogic.dat" & '"', @WorkingDir, @SW_HIDE)
 			EndIf
 			_GUICtrlListView_SetColumn($sList, 0, "Launching client " & $user)
 			$pid = Run($ddo_folder & "\\" & $py_out[$acc - 1], $ddo_folder)
-			Run('ddoclient_wrapper.exe' & ' ' & $pid & ' "' & $rename[$acc - 1] & '"' )
-		;$pid = RunWait("ddoclient_wrapper.exe " & $ddo_folder & " " & $rename[$acc - 1] & ' "' & $character[$acc - 1] & '" "' & $tempstring & '"')
+			Run('ddoclient_wrapper.exe' & ' ' & $pid & ' "' & $rename[$acc - 1] & '"')
+			;$pid = RunWait("ddoclient_wrapper.exe " & $ddo_folder & " " & $rename[$acc - 1] & ' "' & $character[$acc - 1] & '" "' & $tempstring & '"')
 		EndIf
 	Next
 	If $background_launch == 1 Then
 		$locktimer = TimerInit()
 		$lock = 1
 	EndIf
-	while(processExists("ddoclient_wrapper.exe"))
-		sleep(100)
+	While (ProcessExists("ddoclient_wrapper.exe"))
+		Sleep(100)
 	WEnd
 	_GUICtrlListView_SetColumn($sList, 0, "Done... " & $shortcut)
 EndFunc   ;==>launch
@@ -311,32 +334,32 @@ EndFunc   ;==>close_background
 
 Func _deletepatchgui()
 	GUIDelete($patch_gui)
-EndFunc
+EndFunc   ;==>_deletepatchgui
 
 Func _deletelamanniapatchgui()
 	GUIDelete($lamannia_patch_gui)
-EndFunc
+EndFunc   ;==>_deletelamanniapatchgui
 
 Func patch_game()
-	$patch_gui = GuiCreate("Patch Window", 400,300)
-	$patch_edit = GuiCtrlCreateEdit("",0,0,400,300)
+	$patch_gui = GUICreate("Patch Window", 400, 300)
+	$patch_edit = GUICtrlCreateEdit("", 0, 0, 400, 300)
 	GUISetState(@SW_SHOW)
 	;$py_handle = Run("ddolauncher.exe -p -g " & $default_folder)
 	GUICtrlSetData($patch_edit, @CRLF & "***Starting Patch Process***")
 	$tempstring = 'ddolauncher.exe -p -g "' & $default_folder & '"'
-	if $debug == 1 Then
-		_FileWriteLog ( "debug.txt", $tempstring )
+	If $debug == 1 Then
+		_FileWriteLog("debug.txt", $tempstring)
 	EndIf
-	$py_handle = Run(@ComSpec & ' /c ' & $tempstring,@workingdir,@sw_hide,0x6)
+	$py_handle = Run(@ComSpec & ' /c ' & $tempstring, @WorkingDir, @SW_HIDE, 0x6)
 	While 1
 		$patch_text = StdoutRead($py_handle)
 		If @error Then ExitLoop
-		sleep(1000)
+		Sleep(1000)
 		GUICtrlSetData($patch_edit, @CRLF & $patch_text & "..." & GUICtrlRead($patch_edit))
 	WEnd
-	GUICtrlSetData($patch_edit,"***DONE***" & @CRLF & GUICtrlRead($patch_edit))
+	GUICtrlSetData($patch_edit, "***DONE***" & @CRLF & GUICtrlRead($patch_edit))
 	GUISetOnEvent($GUI_EVENT_CLOSE, "_deletepatchgui")
-EndFunc
+EndFunc   ;==>patch_game
 
 Func patch_lamannia()
 	If $lamannia_folder == "" Or $lamannia_folder == -1 Then
@@ -344,50 +367,50 @@ Func patch_lamannia()
 		set_lamannia_directory()
 	EndIf
 
-	$lamannia_patch_gui = GuiCreate("Lamannia Patch Window", 400,300)
-	$patch_edit = GuiCtrlCreateEdit("",0,0,400,300)
+	$lamannia_patch_gui = GUICreate("Lamannia Patch Window", 400, 300)
+	$patch_edit = GUICtrlCreateEdit("", 0, 0, 400, 300)
 	GUISetState(@SW_SHOW)
 	;$py_handle = Run("ddolauncher.exe -p -g " & $lamannia_folder)
 	GUICtrlSetData($patch_edit, @CRLF & "***Starting Patch Process***")
 	$tempstring = 'ddolauncher.exe -p -g "' & $lamannia_folder & '"'
-	if $debug == 1 Then
-		_FileWriteLog ( "debug.txt", $tempstring )
+	If $debug == 1 Then
+		_FileWriteLog("debug.txt", $tempstring)
 	EndIf
-	$py_handle = Run(@ComSpec & ' /c ' & $tempstring,@workingdir,@sw_hide,0x6)
+	$py_handle = Run(@ComSpec & ' /c ' & $tempstring, @WorkingDir, @SW_HIDE, 0x6)
 	While 1
 		$patch_text = StdoutRead($py_handle)
 		If @error Then ExitLoop
-		sleep(1000)
+		Sleep(1000)
 		GUICtrlSetData($patch_edit, @CRLF & $patch_text & "..." & GUICtrlRead($patch_edit))
 	WEnd
-	GUICtrlSetData($patch_edit,"***DONE***" & @CRLF & GUICtrlRead($patch_edit))
+	GUICtrlSetData($patch_edit, "***DONE***" & @CRLF & GUICtrlRead($patch_edit))
 	GUISetOnEvent($GUI_EVENT_CLOSE, "_deletelamanniapatchgui")
-EndFunc
+EndFunc   ;==>patch_lamannia
 
 Func delete_Awesomium()
 	;make backup if DNE
-	DirRemove( $default_folder & "\AwesomiumProcess.exe" )
-	if(FileExists ( $default_folder & "\AwesomiumProcess.exe" )) Then
-		FileCopy($default_folder & "\AwesomiumProcess.exe",$default_folder & "\AwesomiumProcess.bak") ;should not overwrite if exists
-		FileDelete( $default_folder & "\AwesomiumProcess.exe" )
+	DirRemove($default_folder & "\AwesomiumProcess.exe")
+	If (FileExists($default_folder & "\AwesomiumProcess.exe")) Then
+		FileCopy($default_folder & "\AwesomiumProcess.exe", $default_folder & "\AwesomiumProcess.bak") ;should not overwrite if exists
+		FileDelete($default_folder & "\AwesomiumProcess.exe")
 	EndIf
 	;delete
-EndFunc
+EndFunc   ;==>delete_Awesomium
 
 Func restore_Awesomium()
 	;restore from backup
-	DirRemove( $default_folder & "\AwesomiumProcess.exe" )
-	if(FileExists ( $default_folder & "\AwesomiumProcess.bak" )) Then
-		FileCopy($default_folder & "\AwesomiumProcess.bak",$default_folder & "\AwesomiumProcess.exe") ;should not overwrite if exists
+	DirRemove($default_folder & "\AwesomiumProcess.exe")
+	If (FileExists($default_folder & "\AwesomiumProcess.bak")) Then
+		FileCopy($default_folder & "\AwesomiumProcess.bak", $default_folder & "\AwesomiumProcess.exe") ;should not overwrite if exists
 	EndIf
-EndFunc
+EndFunc   ;==>restore_Awesomium
 
 Func kill_Awesomium()
 	;restore from backup
-	while(ProcessExists("AwesomiumProcess.exe"))
+	While (ProcessExists("AwesomiumProcess.exe"))
 		ProcessClose("AwesomiumProcess.exe")
 	WEnd
-EndFunc
+EndFunc   ;==>kill_Awesomium
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -450,53 +473,53 @@ EndFunc   ;==>_ProcessGetHWnd
 
 ;;;;encryption stuff
 
-func encrypt()
-   $filename = @workingdir & "\\" & $xml_file
-   $oXML = _CreateMSXMLObj()
-   If Not IsObj($oXML) Then
-	   MsgBox(0, "_CreateMSXMLObj()", "ERROR!: Unable to create MSXML Object!!", 10)
-	   Exit 1
-   EndIf
+Func encrypt()
+	$filename = @WorkingDir & "\\" & $xml_file
+	$oXML = _CreateMSXMLObj()
+	If Not IsObj($oXML) Then
+		MsgBox(0, "_CreateMSXMLObj()", "ERROR!: Unable to create MSXML Object!!", 10)
+		Exit 1
+	EndIf
 
-   $oXML.async = False
-   $error = $oXML.Load ($filename)
-   If Not $error Then
-	   MsgBox(0, "Load XML", "An error occurred loading " & $filename, 10)
-	   Exit 1
-   EndIf
+	$oXML.async = False
+	$error = $oXML.Load($filename)
+	If Not $error Then
+		MsgBox(0, "Load XML", "An error occurred loading " & $filename, 10)
+		Exit 1
+	EndIf
 
-   $root = $oXML.documentElement
+	$root = $oXML.documentElement
 
-   For $shortcut In $root.childNodes
-	  for $account in $shortcut.childNodes
-		 $pass = $account.selectsinglenode("pass")
+	For $shortcut In $root.childNodes
+		For $account In $shortcut.childNodes
+			$pass = $account.selectsinglenode("pass")
 			$pass_value = $pass.getAttribute("value")
-			if $pass_value <> "" then
-			   $pass_encrypted_value = _Crypt_EncryptData ( $pass_value, $ckey, $CALG_AES_256 )
-			   $pass_encrypted_value = Hex ($pass_encrypted_value)
-			   $pass.setAttribute ("encrypted_value", $pass_encrypted_value)
-			   $pass.setAttribute ("value", "")
+			If $pass_value <> "" Then
+				$pass_encrypted_value = _Crypt_EncryptData($pass_value, $ckey, $CALG_AES_256)
+				$pass_encrypted_value = Hex($pass_encrypted_value)
+				$pass.setAttribute("encrypted_value", $pass_encrypted_value)
+				$pass.setAttribute("value", "")
 			EndIf
-	   next
-   Next
-   $oXML.Save ($filename)
-EndFunc
+		Next
+	Next
+	$oXML.Save($filename)
+EndFunc   ;==>encrypt
 
 Func _CreateMSXMLObj() ; Creates a MSXML instance depending on the version installed on the system
-    $xmlObj = ObjCreate("Msxml2.DOMdocument.6.0") ; Latest available, default in Vista
-    If IsObj($xmlObj) Then Return $xmlObj
+	$xmlObj = ObjCreate("Msxml2.DOMdocument.6.0") ; Latest available, default in Vista
+	If IsObj($xmlObj) Then Return $xmlObj
 
-    $xmlObj = ObjCreate("Msxml2.DOMdocument.5.0") ; Office 2003
-    If IsObj($xmlObj) Then Return $xmlObj
+	$xmlObj = ObjCreate("Msxml2.DOMdocument.5.0") ; Office 2003
+	If IsObj($xmlObj) Then Return $xmlObj
 
-    $xmlObj = ObjCreate("Msxml2.DOMdocument.4.0")
-    If IsObj($xmlObj) Then Return $xmlObj
+	$xmlObj = ObjCreate("Msxml2.DOMdocument.4.0")
+	If IsObj($xmlObj) Then Return $xmlObj
 
-    $xmlObj = ObjCreate("Msxml2.DOMdocument.3.0") ; XP and w2k3 server
-    If IsObj($xmlObj) Then Return $xmlObj
+	$xmlObj = ObjCreate("Msxml2.DOMdocument.3.0") ; XP and w2k3 server
+	If IsObj($xmlObj) Then Return $xmlObj
 
-    $xmlObj = ObjCreate("Msxml2.DOMdocument.2.6") ; Win98 ME...
-    If IsObj($xmlObj) Then Return $xmlObj
+	$xmlObj = ObjCreate("Msxml2.DOMdocument.2.6") ; Win98 ME...
+	If IsObj($xmlObj) Then Return $xmlObj
 
-    Return 0
+	Return 0
 EndFunc   ;==>_CreateMSXMLObj

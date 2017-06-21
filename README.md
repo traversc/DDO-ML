@@ -48,16 +48,14 @@ This is a small GUI interace similar to PyLotro. It is derived from an excellent
 - Patching feature is untested. If it doesn't work, run the official Turbine launcher.
 - Background game launch (experimental) attempts to lock your current DDO window into the foreground. It is sometimes finicky.
 
-
 # Features:
-One-click log in to one or multiple accounts
-Automatic log in to specific toons
-Automatically rename multiple DDO instances on launch
-One-click close all non-active game windows (useful for multi-boxing)
-Awesomium management
-Game patching command
-Background game launch
-
+- One-click log in to one or multiple accounts
+- Automatic log in to specific toons
+- Automatically rename multiple DDO instances on launch
+- One-click close all non-active game windows (useful for multi-boxing)
+- Awesomium management
+- Game patching command
+- Background game launch
 
 # How to use:
 Open ddo-ml.xml in notepad or another text editor and replace the values for account name, password, etc. with your own. I think it's pretty self-explanatory. You can also create additional entries as you see fit, just make sure it is properly formatted or it will break.

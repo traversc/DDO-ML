@@ -1,18 +1,20 @@
-#cs
-	[FileVersion]
-#ce
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=icon.ico
+#AutoIt3Wrapper_Outfile=..\ddolauncher.exe
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Change2CUI=y
-#AutoIt3Wrapper_Res_Field=ProductName|DDO-ML
 #AutoIt3Wrapper_Res_Comment=Original: Copyright 2012 by Florian Stinglmayr (Website: http://github/n0la/ddolauncher)
 #AutoIt3Wrapper_Res_Description=An alternate DDO launcher
-#AutoIt3Wrapper_Res_Fileversion=1.0.1.0
+#AutoIt3Wrapper_Res_Fileversion=1.0.1.1
 #AutoIt3Wrapper_Res_LegalCopyright=AutoIt port from Python by: MIvanIsten (https://github.com/MIvanIsten)
+#AutoIt3Wrapper_Res_Field=ProductName|DDO-ML
+#AutoIt3Wrapper_Add_Constants=n
 #AutoIt3Wrapper_Run_Au3Stripper=y
 #Au3Stripper_Parameters=/rsln /mo
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
+#cs
+	[FileVersion]
+#ce
 #include <File.au3>
 
 $debug = 0

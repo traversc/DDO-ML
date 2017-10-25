@@ -5,10 +5,9 @@
 #AutoIt3Wrapper_Change2CUI=y
 #AutoIt3Wrapper_Res_Comment=Original: Copyright 2012 by Florian Stinglmayr (Website: http://github/n0la/ddolauncher)
 #AutoIt3Wrapper_Res_Description=An alternate DDO launcher
-#AutoIt3Wrapper_Res_Fileversion=1.0.1.1
+#AutoIt3Wrapper_Res_Fileversion=1.0.2.0
 #AutoIt3Wrapper_Res_LegalCopyright=AutoIt port from Python by: MIvanIsten (https://github.com/MIvanIsten)
 #AutoIt3Wrapper_Res_Field=ProductName|DDO-ML
-#AutoIt3Wrapper_Add_Constants=n
 #AutoIt3Wrapper_Run_Au3Stripper=y
 #Au3Stripper_Parameters=/rsln /mo
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
@@ -70,8 +69,8 @@ EndIf
 
 $exe = $ddogamedir & "\\dndclient.exe"
 If Not FileExists($exe) Then
-	ConsoleWrite('Your DDO game directory "' & $ddogamedir & '" does not appear to be right.' & @CRLF)
-	ConsoleWrite("Try specifying your full absolute path to DDO through the -g option." & @CRLF)
+	ConsoleWriteError('Your DDO game directory "' & $ddogamedir & '" does not appear to be right.' & @CRLF)
+	ConsoleWriteError("Try specifying your full absolute path to DDO through the -g option." & @CRLF)
 	Exit 1
 EndIf
 
@@ -81,7 +80,7 @@ If IsArray($config) Then
 	$gamename = $config[1]
 EndIf
 If $datacenter == "" Or $gamename == "" Then
-	ConsoleWrite("Failed to get data center!" & @CRLF)
+	ConsoleWriteError("Failed to get data center!" & @CRLF)
 	Exit 1
 EndIf
 
@@ -145,12 +144,12 @@ For $gw In $worlds
 Next
 
 If UBound($selectedworlds) == 0 Then
-	ConsoleWrite('Your selected world does not exist.' & @CRLF)
+	ConsoleWriteError('Your selected world does not exist.' & @CRLF)
 	Exit 4
 EndIf
 
 If UBound($selectedworlds) > 1 Then
-	ConsoleWrite('Your server selection is not unique.' & @CRLF)
+	ConsoleWriteError('Your server selection is not unique.' & @CRLF)
 	Exit 5
 EndIf
 
@@ -158,7 +157,7 @@ $world = query_host($selectedworlds[0])
 
 $login_result = login($authserver, $world, $user, $pass, $subscription, $gamename, $LoginQueueURL)
 If UBound($selectedworlds) == 0 Then
-	ConsoleWrite("Login of " & $user & " failed. Wrong password?")
+	ConsoleWriteError("Login of " & $user & " failed. Wrong password?")
 Else
 	run_ddo($ddogamedir, $login_result[0], $login_result[1], $language, $world, $gamename, $authserver, $outport)
 EndIf
@@ -223,13 +222,13 @@ Func join_queue($name, $ticket, $world, $LoginQueueURL)
 		$oStatusCode = $oXML.status
 
 		If $oStatusCode <> 200 Then
-			ConsoleWrite("Failed to join the queue." & @CRLF)
-			ExitLoop
+			ConsoleWriteError("Failed to join the queue." & @CRLF)
+			Exit 3
 		Else
 			$hresult = Dec(StringReplace($oXML.responseXML.selectSingleNode("//HResult").text, "0x", ""), 2)
 			If $hresult > 0 Then
-				ConsoleWrite("World queue returned an error." & @CRLF)
-				ExitLoop
+				ConsoleWriteError("World queue returned an error." & @CRLF)
+				Exit 3
 			Else
 				$number = Dec(StringReplace($oXML.responseXML.selectSingleNode("//QueueNumber").text, "0x", ""), 2)
 				$nowserving = Dec(StringReplace($oXML.responseXML.selectSingleNode("//NowServingNumber").text, "0x", ""), 2)
@@ -294,7 +293,7 @@ Func login($authserver, $world, $username, $password, $subscription, $gamename, 
 	EndIf
 
 	If $found_ddo == False Then
-		ConsoleWrite("Unable to find a subscription on your account for DDO. Your LotrO account?" & @CRLF)
+		ConsoleWriteError("Unable to find a subscription on your account for DDO. Your LotrO account?" & @CRLF)
 		Exit 2
 	EndIf
 
@@ -311,7 +310,8 @@ Func query_queue_url($configserver)
 
 	$oXML = _CreateMSXMLObj(1)
 	If Not IsObj($oXML) Then
-		ConsoleWrite("_CreateMSXMLObj(1) ERROR!: Unable to create MSXML Object!!" & @CRLF)
+		ConsoleWriteError("_CreateMSXMLObj(1) ERROR!: Unable to create MSXML Object!!" & @CRLF)
+		Exit 2
 	Else
 		$oXML.open("GET", $configserver, False) ;
 		$oXML.send() ;
@@ -320,7 +320,8 @@ Func query_queue_url($configserver)
 		If $oStatusCode = 200 Then
 			$url = $oXML.responseXML.selectSingleNode('//appSettings/add[@key = "WorldQueue.LoginQueue.URL"]').getAttribute("value")
 		Else
-			ConsoleWrite("Error " & $oXML.status & ": " & $oXML.statusText & @CRLF)
+			ConsoleWriteError("Error " & $oXML.status & ": " & $oXML.statusText & @CRLF)
+			Exit 2
 		EndIf
 	EndIf
 
@@ -335,14 +336,14 @@ Func get_config_data($basepath)
 
 	$oXML = _CreateMSXMLObj(0)
 	If Not IsObj($oXML) Then
-		ConsoleWrite("_CreateMSXMLObj(0) ERROR!: Unable to create MSXML Object!!" & @CRLF)
+		ConsoleWriteError("_CreateMSXMLObj(0) ERROR!: Unable to create MSXML Object!!" & @CRLF)
 		Exit 1
 	EndIf
 
 	$oXML.async = False
 	$error = $oXML.Load($path)
 	If Not $error Then
-		ConsoleWrite("Load XML An error occurred loading " & $path & @CRLF)
+		ConsoleWriteError("Load XML An error occurred loading " & $path & @CRLF)
 		Exit 1
 	EndIf
 
@@ -357,24 +358,25 @@ Func query_host($world)
 
 	$oXML = _CreateMSXMLObj(1)
 	If Not IsObj($oXML) Then
-		ConsoleWrite("_CreateMSXMLObj(1) ERROR!: Unable to create MSXML Object!!" & @CRLF)
+		ConsoleWriteError("_CreateMSXMLObj(1) ERROR!: Unable to create MSXML Object!!" & @CRLF)
+		Exit 2
 	Else
 		$oXML.open("GET", $world[4], False) ;
 		$oXML.send() ;
 		$oStatusCode = $oXML.status
 
-		If $oStatusCode = 200 Then
-			If StringLen($oXML.responseXML.xml) > 0 Then
-				$hosts = StringSplit($oXML.responseXML.selectSingleNode("//loginservers").text, ";")
-				$world[1] = $hosts[1]
-				$queueurls = StringSplit($oXML.responseXML.selectSingleNode("//queueurls").text, ";")
-				$world[5] = $queueurls[1]
-			Else
-				ConsoleWrite("The given server appears to be down.")
-				Exit 1
-			EndIf
+		If $oStatusCode == 200 Then
+			$hosts = StringSplit($oXML.responseXML.selectSingleNode("//loginservers").text, ";")
+			$world[1] = $hosts[1]
+			$queueurls = StringSplit($oXML.responseXML.selectSingleNode("//queueurls").text, ";")
+			$world[5] = $queueurls[1]
 		Else
-			ConsoleWrite("Error " & $oXML.status & ": " & $oXML.statusText & @CRLF)
+			If StringLen($oXML.statusText) > 0 Then
+				ConsoleWriteError("Error " & $oXML.status & ": " & $oXML.statusText & @CRLF)
+			Else
+				ConsoleWriteError("The given server appears to be down.")
+			EndIf
+			Exit 2
 		EndIf
 	EndIf
 	Return $world
@@ -402,7 +404,7 @@ Func query_worlds($url, $gamename)
 	$oXML.Send($sPD)
 	$oStatusCode = $oXML.status
 
-	If $oStatusCode = 200 Then
+	If $oStatusCode == 200 Then
 		$oReceived = $oXML.responseXML
 		$datacenters = $oReceived.selectNodes("//GetDatacentersResult/*")
 		For $dc In $datacenters
@@ -424,7 +426,12 @@ Func query_worlds($url, $gamename)
 			EndIf
 		Next
 	Else
-		ConsoleWrite("Error " & $oStatusCode & @CRLF)
+		If StringLen($oXML.statusText) > 0 Then
+			ConsoleWriteError("Error " & $oXML.status & ": " & $oXML.statusText & @CRLF)
+		Else
+			ConsoleWriteError("No response from datacenter. Servers down?")
+		EndIf
+		Exit 2
 	EndIf
 
 	Return $config

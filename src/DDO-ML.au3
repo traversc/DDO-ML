@@ -3,9 +3,8 @@
 #AutoIt3Wrapper_Outfile=..\DDO-ML.exe
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=An alternate DDO launcher
-#AutoIt3Wrapper_Res_Fileversion=1.4.1.1
+#AutoIt3Wrapper_Res_Fileversion=1.4.2.0
 #AutoIt3Wrapper_Res_Field=ProductName|DDO-ML
-#AutoIt3Wrapper_Add_Constants=n
 #AutoIt3Wrapper_Run_Au3Stripper=y
 #Au3Stripper_Parameters=/rsln /mo
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
@@ -262,11 +261,9 @@ Func launch()
 		$character[$acc - 1] = _xmlGetattrib("shortcut[" & $i & "]/account[" & $acc & "]/character", "value")
 		$tempstring = 'ddolauncher.exe' & ' -s ' & $server & ' -g "' & $ddo_folder & '" -u "' & $user & '" -a "' & $pass & '" -z "' & $subscription & '"'
 
-		If $debug == 1 Then
-			_FileWriteLog("debug.txt", $tempstring)
-		EndIf
+		If $debug == 1 Then _FileWriteLog("debug.txt", $tempstring)
 
-		$py_handle = Run($tempstring, "", @SW_HIDE, 0x6)
+		$py_handle = Run($tempstring, "", @SW_HIDE, $STDERR_CHILD + $STDOUT_CHILD)
 		_GUICtrlListView_SetColumn($sList, 0, "Login " & $user)
 		Local $timer = TimerInit()
 		While 1
@@ -276,14 +273,17 @@ Func launch()
 			If TimerDiff($timer) > $login_timeout Then
 				_GUICtrlListView_SetColumn($sList, 0, "Auth. timeout " & $user)
 				ConsoleWrite($py_out[$acc - 1])
+				If $debug == 1 Then _FileWriteLog("debug.txt", "Auth. timeout " & $user)
 				ExitLoop
-				;to do: write log file
 			EndIf
 		WEnd
+		While 1
+			$py_out[$acc - 1] = $py_out[$acc - 1] & StderrRead($py_handle)
+			If @error Then ExitLoop
+			MsgBox($MB_ICONERROR, "ddolauncher.exe", $py_out[$acc - 1])
+		WEnd
 
-		If $debug == 1 Then
-			_FileWriteLog("debug.txt", $py_out[$acc - 1])
-		EndIf
+		If $debug == 1 Then _FileWriteLog("debug.txt", $py_out[$acc - 1])
 	Next
 
 	If $background_launch == 1 Then
@@ -294,7 +294,7 @@ Func launch()
 	For $acc = 1 To $acc_count Step 1
 		If Not StringInStr($py_out[$acc - 1], "dndclient.exe") Then
 			_GUICtrlListView_SetColumn($sList, 0, "Error " & $user)
-			;Exit 1
+			Return
 		Else
 			If $character[$acc - 1] <> "" Then
 				$py_out[$acc - 1] = $py_out[$acc - 1] & " -u " & $character[$acc - 1]
@@ -348,9 +348,7 @@ Func patch_game()
 	;$py_handle = Run("ddolauncher.exe -p -g " & $default_folder)
 	GUICtrlSetData($patch_edit, @CRLF & "***Starting Patch Process***")
 	$tempstring = 'ddolauncher.exe -p -g "' & $default_folder & '"'
-	If $debug == 1 Then
-		_FileWriteLog("debug.txt", $tempstring)
-	EndIf
+	If $debug == 1 Then _FileWriteLog("debug.txt", $tempstring)
 	$py_handle = Run(@ComSpec & ' /c ' & $tempstring, @WorkingDir, @SW_HIDE, 0x6)
 	While 1
 		$patch_text = StdoutRead($py_handle)
@@ -374,9 +372,7 @@ Func patch_lamannia()
 	;$py_handle = Run("ddolauncher.exe -p -g " & $lamannia_folder)
 	GUICtrlSetData($patch_edit, @CRLF & "***Starting Patch Process***")
 	$tempstring = 'ddolauncher.exe -p -g "' & $lamannia_folder & '"'
-	If $debug == 1 Then
-		_FileWriteLog("debug.txt", $tempstring)
-	EndIf
+	If $debug == 1 Then _FileWriteLog("debug.txt", $tempstring)
 	$py_handle = Run(@ComSpec & ' /c ' & $tempstring, @WorkingDir, @SW_HIDE, 0x6)
 	While 1
 		$patch_text = StdoutRead($py_handle)

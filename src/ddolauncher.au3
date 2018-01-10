@@ -5,7 +5,7 @@
 #AutoIt3Wrapper_Change2CUI=y
 #AutoIt3Wrapper_Res_Comment=Original: Copyright 2012 by Florian Stinglmayr (Website: http://github/n0la/ddolauncher)
 #AutoIt3Wrapper_Res_Description=An alternate DDO launcher
-#AutoIt3Wrapper_Res_Fileversion=1.0.2.0
+#AutoIt3Wrapper_Res_Fileversion=1.0.3.0
 #AutoIt3Wrapper_Res_LegalCopyright=AutoIt port from Python by: MIvanIsten (https://github.com/MIvanIsten)
 #AutoIt3Wrapper_Res_Field=ProductName|DDO-ML
 #AutoIt3Wrapper_Run_Au3Stripper=y
@@ -53,11 +53,15 @@ If $CmdLine[0] > 0 Then
 			Case $CmdLine[$i] == "-z" Or $CmdLine[$i] == "--subscription"
 				$i = $i + 1
 				$subscription = $CmdLine[$i]
+			Case $CmdLine[$i] == "-d"
+				$i = $i + 1
+				$debug = $CmdLine[$i]
 			Case $CmdLine[$i] == "-v" Or $CmdLine[$i] == "--version"
 				Version()
 				Exit 0
 			Case $CmdLine[$i] == "-o" Or $CmdLine[$i] == "--out-port"
-				$outport = 1
+				$i = $i + 1
+				$outport = $CmdLine[$i]
 		EndSelect
 	Next
 EndIf
@@ -94,7 +98,7 @@ EndIf
 
 $LoginQueueURL = query_queue_url($configserver)
 
-If $debug == 1 Then
+If $debug == 1 Or $debug == 2 Then
 	_FileWriteLog("ddolauncher.txt", "ddogamedir: " & $ddogamedir & @CRLF)
 	_FileWriteLog("ddolauncher.txt", "exe: " & $exe & @CRLF)
 	_FileWriteLog("ddolauncher.txt", "user: " & $user & @CRLF)
@@ -225,6 +229,10 @@ Func join_queue($name, $ticket, $world, $LoginQueueURL)
 			ConsoleWriteError("Failed to join the queue." & @CRLF)
 			Exit 3
 		Else
+			If $debug == 2 Then
+				_FileWriteLog("ddolauncher.txt", "join_queue: " & $oXML.responseXML.xml & @CRLF)
+			EndIf
+
 			$hresult = Dec(StringReplace($oXML.responseXML.selectSingleNode("//HResult").text, "0x", ""), 2)
 			If $hresult > 0 Then
 				ConsoleWriteError("World queue returned an error." & @CRLF)
@@ -270,6 +278,10 @@ Func login($authserver, $world, $username, $password, $subscription, $gamename, 
 	If $oStatusCode <> 200 Then
 		ConsoleWrite("HTTP post failed." & @CRLF)
 	Else
+		If $debug == 2 Then
+			_FileWriteLog("ddolauncher.txt", "login: " & $oXML.responseXML.xml & @CRLF)
+		EndIf
+
 		$oReceived = $oXML.responseXML
 		$ticket = $oReceived.selectSingleNode('//Ticket').text
 
@@ -318,6 +330,10 @@ Func query_queue_url($configserver)
 		$oStatusCode = $oXML.status
 
 		If $oStatusCode = 200 Then
+			If $debug == 2 Then
+				_FileWriteLog("ddolauncher.txt", "query_queue_url: " & $oXML.responseXML.xml & @CRLF)
+			EndIf
+
 			$url = $oXML.responseXML.selectSingleNode('//appSettings/add[@key = "WorldQueue.LoginQueue.URL"]').getAttribute("value")
 		Else
 			ConsoleWriteError("Error " & $oXML.status & ": " & $oXML.statusText & @CRLF)
@@ -366,6 +382,10 @@ Func query_host($world)
 		$oStatusCode = $oXML.status
 
 		If $oStatusCode == 200 Then
+			If $debug == 2 Then
+				_FileWriteLog("ddolauncher.txt", "query_host: " & $oXML.responseXML.xml & @CRLF)
+			EndIf
+
 			$hosts = StringSplit($oXML.responseXML.selectSingleNode("//loginservers").text, ";")
 			$world[1] = $hosts[1]
 			$queueurls = StringSplit($oXML.responseXML.selectSingleNode("//queueurls").text, ";")
@@ -405,6 +425,10 @@ Func query_worlds($url, $gamename)
 	$oStatusCode = $oXML.status
 
 	If $oStatusCode == 200 Then
+		If $debug == 2 Then
+			_FileWriteLog("ddolauncher.txt", "query_worlds: " & $oXML.responseXML.xml & @CRLF)
+		EndIf
+
 		$oReceived = $oXML.responseXML
 		$datacenters = $oReceived.selectNodes("//GetDatacentersResult/*")
 		For $dc In $datacenters
@@ -494,6 +518,7 @@ Func Usage()
 	ConsoleWrite(" -p --patch Run DDO patcher." & @CRLF)
 	ConsoleWrite(" -s --server Specify server to login to, default Ghallanda." & @CRLF)
 	ConsoleWrite(" -z --subscription Specify subscription name, default to the first one" & @CRLF)
+	ConsoleWrite(" -d Specify debug level (1|2)" & @CRLF)
 	ConsoleWrite(" -v --version Print version and author information." & @CRLF)
 	ConsoleWrite(" -o --out-port Output for DDO to use. DDO binds to this address so using the same port again will cause DDO to fail." & @CRLF)
 EndFunc   ;==>Usage

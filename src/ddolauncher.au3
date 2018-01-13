@@ -5,7 +5,7 @@
 #AutoIt3Wrapper_Change2CUI=y
 #AutoIt3Wrapper_Res_Comment=Original: Copyright 2012 by Florian Stinglmayr (Website: http://github/n0la/ddolauncher)
 #AutoIt3Wrapper_Res_Description=An alternate DDO launcher
-#AutoIt3Wrapper_Res_Fileversion=1.0.3.0
+#AutoIt3Wrapper_Res_Fileversion=1.0.4.0
 #AutoIt3Wrapper_Res_LegalCopyright=AutoIt port from Python by: MIvanIsten (https://github.com/MIvanIsten)
 #AutoIt3Wrapper_Res_Field=ProductName|DDO-ML
 #AutoIt3Wrapper_Run_Au3Stripper=y
@@ -16,6 +16,7 @@
 #ce
 #include <File.au3>
 
+$oErrObj = ObjEvent("AutoIt.Error","_MyErrFunc")
 $debug = 0
 $server = ""
 $language = "English"
@@ -56,6 +57,7 @@ If $CmdLine[0] > 0 Then
 			Case $CmdLine[$i] == "-d"
 				$i = $i + 1
 				$debug = $CmdLine[$i]
+				If $debug <> 1 And $debug <> 2 Then $debug = 0
 			Case $CmdLine[$i] == "-v" Or $CmdLine[$i] == "--version"
 				Version()
 				Exit 0
@@ -98,7 +100,7 @@ EndIf
 
 $LoginQueueURL = query_queue_url($configserver)
 
-If $debug == 1 Or $debug == 2 Then
+If $debug > 0 Then 
 	_FileWriteLog("ddolauncher.txt", "ddogamedir: " & $ddogamedir & @CRLF)
 	_FileWriteLog("ddolauncher.txt", "exe: " & $exe & @CRLF)
 	_FileWriteLog("ddolauncher.txt", "user: " & $user & @CRLF)
@@ -216,6 +218,10 @@ EndFunc   ;==>run_ddo
 Func join_queue($name, $ticket, $world, $LoginQueueURL)
 	$params = "command=TakeANumber&subscription=" & $name & "&ticket=" & _UnicodeURLEncode($ticket) & "&ticket_type=GLS&queue_url=" & _UnicodeURLEncode($world[5])
 	$oXML = _CreateMSXMLObj(1)
+	If Not IsObj($oXML) Then
+		ConsoleWriteError("_CreateMSXMLObj(1) ERROR!: Unable to create MSXML Object!!" & @CRLF)
+		Exit 2
+	EndIf
 
 	While True
 		$oXML.setOption(2, 13056)
@@ -223,30 +229,35 @@ Func join_queue($name, $ticket, $world, $LoginQueueURL)
 		$oXML.SetRequestHeader("Content-Type", "text/xml; charset=utf-8")
 		$oXML.SetRequestHeader("Content-Length", StringLen($params))
 		$oXML.Send($params)
-		$oStatusCode = $oXML.status
 
+		If @error Then Exit 2
+
+		$oStatusCode = $oXML.status
 		If $oStatusCode <> 200 Then
 			ConsoleWriteError("Failed to join the queue." & @CRLF)
+			If StringLen($oXML.statusText) > 0 Then
+				ConsoleWriteError("Error " & $oXML.status & ": " & $oXML.statusText & @CRLF)
+			EndIf
+			Exit 3
+		EndIf
+
+		If $debug > 1 Then 
+			_FileWriteLog("ddolauncher.txt", "join_queue: " & $oXML.responseXML.xml & @CRLF)
+		EndIf
+
+		$hresult = Dec(StringReplace($oXML.responseXML.selectSingleNode("//HResult").text, "0x", ""), 2)
+		If $hresult > 0 Then
+			ConsoleWriteError("World queue returned an error." & @CRLF)
 			Exit 3
 		Else
-			If $debug == 2 Then
-				_FileWriteLog("ddolauncher.txt", "join_queue: " & $oXML.responseXML.xml & @CRLF)
-			EndIf
+			$number = Dec(StringReplace($oXML.responseXML.selectSingleNode("//QueueNumber").text, "0x", ""), 2)
+			$nowserving = Dec(StringReplace($oXML.responseXML.selectSingleNode("//NowServingNumber").text, "0x", ""), 2)
+		EndIf
 
-			$hresult = Dec(StringReplace($oXML.responseXML.selectSingleNode("//HResult").text, "0x", ""), 2)
-			If $hresult > 0 Then
-				ConsoleWriteError("World queue returned an error." & @CRLF)
-				Exit 3
-			Else
-				$number = Dec(StringReplace($oXML.responseXML.selectSingleNode("//QueueNumber").text, "0x", ""), 2)
-				$nowserving = Dec(StringReplace($oXML.responseXML.selectSingleNode("//NowServingNumber").text, "0x", ""), 2)
-			EndIf
-
-			If $number > $nowserving Then
-				Sleep(2000)
-			Else
-				ExitLoop
-			EndIf
+		If $number > $nowserving Then
+			Sleep(2000)
+		Else
+			ExitLoop
 		EndIf
 	WEnd
 EndFunc   ;==>join_queue
@@ -267,6 +278,11 @@ Func login($authserver, $world, $username, $password, $subscription, $gamename, 
 			'</soap:Envelope>'
 
 	$oXML = _CreateMSXMLObj(1)
+	If Not IsObj($oXML) Then
+		ConsoleWriteError("_CreateMSXMLObj(1) ERROR!: Unable to create MSXML Object!!" & @CRLF)
+		Exit 2
+	EndIf
+	
 	$oXML.setOption(2, 13056)
 	$oXML.Open("POST", $authserver, False)
 	$oXML.SetRequestHeader("Content-Type", "text/xml; charset=utf-8")
@@ -274,35 +290,41 @@ Func login($authserver, $world, $username, $password, $subscription, $gamename, 
 	$oXML.SetRequestHeader("Content-Length", StringLen($xml))
 	$oXML.Send($xml)
 
+	If @error Then Exit 2
+
 	$oStatusCode = $oXML.status
 	If $oStatusCode <> 200 Then
-		ConsoleWrite("HTTP post failed." & @CRLF)
-	Else
-		If $debug == 2 Then
-			_FileWriteLog("ddolauncher.txt", "login: " & $oXML.responseXML.xml & @CRLF)
+		ConsoleWriteError("HTTP post failed." & @CRLF)
+		If StringLen($oXML.statusText) > 0 Then
+			ConsoleWriteError("Error " & $oXML.status & ": " & $oXML.statusText & @CRLF)
 		EndIf
-
-		$oReceived = $oXML.responseXML
-		$ticket = $oReceived.selectSingleNode('//Ticket').text
-
-		For $game_sub In $oReceived.selectNodes('//Subscriptions/GameSubscription')
-			If $subscription == "" Then
-				$sub_info = $game_sub.selectSingleNode('Game')
-				If StringLower($sub_info.text) == StringLower($gamename) Then
-					$found_ddo = True
-				EndIf
-			Else
-				$sub_info = $game_sub.selectSingleNode('Description')
-				If StringLower($sub_info.text) == StringLower($subscription) Then
-					$found_ddo = True
-				EndIf
-			EndIf
-			If $found_ddo == True Then
-				$account = $game_sub.selectSingleNode('Name').text
-				ExitLoop
-			EndIf
-		Next
+		Exit 2
 	EndIf
+
+	If $debug > 1 Then 
+		_FileWriteLog("ddolauncher.txt", "login: " & $oXML.responseXML.xml & @CRLF)
+	EndIf
+
+	$oReceived = $oXML.responseXML
+	$ticket = $oReceived.selectSingleNode('//Ticket').text
+
+	For $game_sub In $oReceived.selectNodes('//Subscriptions/GameSubscription')
+		If $subscription == "" Then
+			$sub_info = $game_sub.selectSingleNode('Game')
+			If StringLower($sub_info.text) == StringLower($gamename) Then
+				$found_ddo = True
+			EndIf
+		Else
+			$sub_info = $game_sub.selectSingleNode('Description')
+			If StringLower($sub_info.text) == StringLower($subscription) Then
+				$found_ddo = True
+			EndIf
+		EndIf
+		If $found_ddo == True Then
+			$account = $game_sub.selectSingleNode('Name').text
+			ExitLoop
+		EndIf
+	Next
 
 	If $found_ddo == False Then
 		ConsoleWriteError("Unable to find a subscription on your account for DDO. Your LotrO account?" & @CRLF)
@@ -324,22 +346,27 @@ Func query_queue_url($configserver)
 	If Not IsObj($oXML) Then
 		ConsoleWriteError("_CreateMSXMLObj(1) ERROR!: Unable to create MSXML Object!!" & @CRLF)
 		Exit 2
-	Else
-		$oXML.open("GET", $configserver, False) ;
-		$oXML.send() ;
-		$oStatusCode = $oXML.status
-
-		If $oStatusCode = 200 Then
-			If $debug == 2 Then
-				_FileWriteLog("ddolauncher.txt", "query_queue_url: " & $oXML.responseXML.xml & @CRLF)
-			EndIf
-
-			$url = $oXML.responseXML.selectSingleNode('//appSettings/add[@key = "WorldQueue.LoginQueue.URL"]').getAttribute("value")
-		Else
-			ConsoleWriteError("Error " & $oXML.status & ": " & $oXML.statusText & @CRLF)
-			Exit 2
-		EndIf
 	EndIf
+
+	$oXML.open("GET", $configserver, False)
+	$oXML.send()
+
+	If @error Then Exit 2
+
+	$oStatusCode = $oXML.status
+	If $oStatusCode <> 200 Then
+		ConsoleWriteError("HTTP post failed." & @CRLF)
+		If StringLen($oXML.statusText) > 0 Then
+			ConsoleWriteError("Error " & $oXML.status & ": " & $oXML.statusText & @CRLF)
+		EndIf
+		Exit 2
+	EndIf
+
+	If $debug > 1 Then 
+		_FileWriteLog("ddolauncher.txt", "query_queue_url: " & $oXML.responseXML.xml & @CRLF)
+	EndIf
+
+	$url = $oXML.responseXML.selectSingleNode('//appSettings/add[@key = "WorldQueue.LoginQueue.URL"]').getAttribute("value")
 
 	Return $url
 EndFunc   ;==>query_queue_url
@@ -376,29 +403,31 @@ Func query_host($world)
 	If Not IsObj($oXML) Then
 		ConsoleWriteError("_CreateMSXMLObj(1) ERROR!: Unable to create MSXML Object!!" & @CRLF)
 		Exit 2
-	Else
-		$oXML.open("GET", $world[4], False) ;
-		$oXML.send() ;
-		$oStatusCode = $oXML.status
-
-		If $oStatusCode == 200 Then
-			If $debug == 2 Then
-				_FileWriteLog("ddolauncher.txt", "query_host: " & $oXML.responseXML.xml & @CRLF)
-			EndIf
-
-			$hosts = StringSplit($oXML.responseXML.selectSingleNode("//loginservers").text, ";")
-			$world[1] = $hosts[1]
-			$queueurls = StringSplit($oXML.responseXML.selectSingleNode("//queueurls").text, ";")
-			$world[5] = $queueurls[1]
-		Else
-			If StringLen($oXML.statusText) > 0 Then
-				ConsoleWriteError("Error " & $oXML.status & ": " & $oXML.statusText & @CRLF)
-			Else
-				ConsoleWriteError("The given server appears to be down.")
-			EndIf
-			Exit 2
-		EndIf
 	EndIf
+	
+	$oXML.open("GET", $world[4], False)
+	$oXML.send()
+
+	If @error Then Exit 2
+
+	$oStatusCode = $oXML.status
+	If $oStatusCode <> 200 Then
+		ConsoleWriteError("The given server appears to be down.")
+		If StringLen($oXML.statusText) > 0 Then
+			ConsoleWriteError("Error " & $oXML.status & ": " & $oXML.statusText & @CRLF)
+		EndIf
+		Exit 2
+	EndIf
+
+	If $debug > 1 Then 
+		_FileWriteLog("ddolauncher.txt", "query_host: " & $oXML.responseXML.xml & @CRLF)
+	EndIf
+
+	$hosts = StringSplit($oXML.responseXML.selectSingleNode("//loginservers").text, ";")
+	$world[1] = $hosts[1]
+	$queueurls = StringSplit($oXML.responseXML.selectSingleNode("//queueurls").text, ";")
+	$world[5] = $queueurls[1]
+
 	Return $world
 EndFunc   ;==>query_host
 
@@ -408,6 +437,12 @@ Func query_worlds($url, $gamename)
 	Local $game_world[1]
 	Local $game_servers[0]
 
+	$oXML = _CreateMSXMLObj(1)
+	If Not IsObj($oXML) Then
+		ConsoleWriteError("_CreateMSXMLObj(1) ERROR!: Unable to create MSXML Object!!" & @CRLF)
+		Exit 2
+	EndIf
+	
 	$sPD = '<?xml version="1.0" encoding="utf-8"?>' & _
 			'<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">' & _
 			'<soap:Body>' & _
@@ -416,47 +451,47 @@ Func query_worlds($url, $gamename)
 			'</GetDatacenters>' & _
 			'</soap:Body>' & _
 			'</soap:Envelope>'
-	$oXML = _CreateMSXMLObj(1)
 	$oXML.Open("POST", $url, False)
 	$oXML.SetRequestHeader("Content-Type", "text/xml; charset=utf-8")
 	$oXML.SetRequestHeader("SOAPAction", "http://www.turbine.com/SE/GLS/GetDatacenters")
 	$oXML.SetRequestHeader("Content-Length", StringLen($sPD))
 	$oXML.Send($sPD)
+
+	If @error Then Exit 2
+
 	$oStatusCode = $oXML.status
-
-	If $oStatusCode == 200 Then
-		If $debug == 2 Then
-			_FileWriteLog("ddolauncher.txt", "query_worlds: " & $oXML.responseXML.xml & @CRLF)
-		EndIf
-
-		$oReceived = $oXML.responseXML
-		$datacenters = $oReceived.selectNodes("//GetDatacentersResult/*")
-		For $dc In $datacenters
-			If $gamename == $dc.selectSingleNode("Name").text Then
-				$config[0] = $dc.selectSingleNode('AuthServer').text
-				$config[1] = $dc.selectSingleNode('PatchServer').text
-				$config[2] = $dc.selectSingleNode('LauncherConfigurationServer').text
-				$worlds = $dc.selectNodes("Worlds/*")
-				For $world In $worlds
-					$w[0] = $world.selectSingleNode('Name').text
-					$w[1] = $world.selectSingleNode('LoginServerUrl').text
-					$w[2] = $world.selectSingleNode('ChatServerUrl').text
-					$w[3] = $world.selectSingleNode('Language').text
-					$w[4] = $world.selectSingleNode('StatusServerUrl').text
-					$game_world[0] = query_host($w)
-					_ArrayAdd($game_servers, $game_world)
-				Next
-				$config[3] = $game_servers
-			EndIf
-		Next
-	Else
+	If $oStatusCode <> 200 Then
+		ConsoleWriteError("No response from datacenter. Servers down?")
 		If StringLen($oXML.statusText) > 0 Then
 			ConsoleWriteError("Error " & $oXML.status & ": " & $oXML.statusText & @CRLF)
-		Else
-			ConsoleWriteError("No response from datacenter. Servers down?")
 		EndIf
 		Exit 2
 	EndIf
+
+	If $debug > 1 Then 
+		_FileWriteLog("ddolauncher.txt", "query_worlds: " & $oXML.responseXML.xml & @CRLF)
+	EndIf
+
+	$oReceived = $oXML.responseXML
+	$datacenters = $oReceived.selectNodes("//GetDatacentersResult/*")
+	For $dc In $datacenters
+		If $gamename == $dc.selectSingleNode("Name").text Then
+			$config[0] = $dc.selectSingleNode('AuthServer').text
+			$config[1] = $dc.selectSingleNode('PatchServer').text
+			$config[2] = $dc.selectSingleNode('LauncherConfigurationServer').text
+			$worlds = $dc.selectNodes("Worlds/*")
+			For $world In $worlds
+				$w[0] = $world.selectSingleNode('Name').text
+				$w[1] = $world.selectSingleNode('LoginServerUrl').text
+				$w[2] = $world.selectSingleNode('ChatServerUrl').text
+				$w[3] = $world.selectSingleNode('Language').text
+				$w[4] = $world.selectSingleNode('StatusServerUrl').text
+				$game_world[0] = query_host($w)
+				_ArrayAdd($game_servers, $game_world)
+			Next
+			$config[3] = $game_servers
+		EndIf
+	Next
 
 	Return $config
 EndFunc   ;==>query_worlds
@@ -505,6 +540,25 @@ Func _CreateMSXMLObj($mode) ; Creates a MSXML instance depending on the version 
 	EndSwitch
 	Return $xmlObj
 EndFunc   ;==>_CreateMSXMLObj
+
+Func _MyErrFunc()
+;~ 					"description: "    & $oErrObj.description
+;~ 					"windescription: " & $oErrObj.windescription
+;~ 					"lastdllerror: "   & $oErrObj.lastdllerror
+;~ 					"scriptline: "     & $oErrObj.scriptline
+;~ 					"number: "         & Hex($oErrObj.number,8)
+;~ 					"source: "         & $oErrObj.source
+;~ 					"helpfile: "       & $oErrObj.helpfile
+;~ 					"helpcontext: "    & $oErrObj.helpcontext
+	If $debug>0 Then
+		$msg = "ddolauncher "
+		If $oErrObj.scriptline > -1 Then $msg &= "Line: " & $oErrObj.scriptline & ", "
+		$msg &= "ERROR " & Hex($oErrObj.number,8)  & ": " & $oErrObj.description
+		ConsoleWriteError($msg)
+		_FileWriteLog("ddolauncher.txt", $msg)
+	EndIf
+	Seterror(1)
+EndFunc   ;==>_MyErrFunc
 
 Func Usage()
 	ConsoleWrite("ddolauncher.exe -g gamedir [options]" & @CRLF)
@@ -557,8 +611,6 @@ Func _UnicodeURLEncode($UnicodeURL)
 	Next
 	Return $EncodedString
 EndFunc   ;==>_UnicodeURLEncode
-
-
 
 ;===============================================================================
 ; _UnicodeURLDecode()

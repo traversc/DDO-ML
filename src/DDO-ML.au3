@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Outfile=..\DDO-ML.exe
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=An alternate DDO launcher
-#AutoIt3Wrapper_Res_Fileversion=1.4.3.0
+#AutoIt3Wrapper_Res_Fileversion=1.4.4.0
 #AutoIt3Wrapper_Res_Field=ProductName|DDO-ML
 #AutoIt3Wrapper_Run_Au3Stripper=y
 #Au3Stripper_Parameters=/rsln /mo
@@ -26,6 +26,8 @@
 #include <GuiListView.au3>
 #include <File.au3>
 
+$oErrObj = ObjEvent("AutoIt.Error","_MyErrFunc")
+
 $xml_file = "ddo-ml.xml"
 $ini_file = "ddo-ml.ini"
 
@@ -45,6 +47,7 @@ $default_server = IniRead($ini_file, "startup", "server", "khyber")
 $lamannia_folder = IniRead($ini_file, "startup", "lamannia_directory", "")
 $preload = IniRead($ini_file, "startup", "usepreloader", "0")
 $debug = IniRead($ini_file, "startup", "debug", "0")
+If $debug <> 1 And $debug <> 2 Then $debug = 0
 
 Func _GetVersion()
 	If @Compiled Then
@@ -238,6 +241,7 @@ Func launch()
 		If @error Then
 			$subscription = ""
 		EndIf
+
 		If $pass == "" Then
 			$pass = _xmlGetattrib("shortcut[" & $i & "]/account[" & $acc & "]/pass", "encrypted_value")
 			$pass = _HexToString($pass)
@@ -261,7 +265,7 @@ Func launch()
 		$character[$acc - 1] = _xmlGetattrib("shortcut[" & $i & "]/account[" & $acc & "]/character", "value")
 		$tempstring = 'ddolauncher.exe' & ' -s ' & $server & ' -g "' & $ddo_folder & '" -u "' & $user & '" -a "' & $pass & '" -z "' & $subscription & '"'
 
-		If $debug == 1 Or $debug == 2 Then 
+		If $debug > 0 Then 
 			$tempstring = $tempstring & ' -d ' & $debug
 			_FileWriteLog("debug.txt", $tempstring)
 		EndIf
@@ -276,7 +280,7 @@ Func launch()
 			If TimerDiff($timer) > $login_timeout Then
 				_GUICtrlListView_SetColumn($sList, 0, "Auth. timeout " & $user)
 				ConsoleWrite($py_out[$acc - 1])
-				If $debug == 1 Or $debug == 2 Then _FileWriteLog("debug.txt", "Auth. timeout " & $user)
+				If $debug > 0 Then _FileWriteLog("debug.txt", "Auth. timeout " & $user)
 				ExitLoop
 			EndIf
 		WEnd
@@ -286,7 +290,7 @@ Func launch()
 			MsgBox($MB_ICONERROR, "ddolauncher.exe", $py_out[$acc - 1])
 		WEnd
 
-		If $debug == 1 Or $debug == 2 Then _FileWriteLog("debug.txt", $py_out[$acc - 1])
+		If $debug > 0 Then _FileWriteLog("debug.txt", $py_out[$acc - 1])
 	Next
 
 	If $background_launch == 1 Then
@@ -377,7 +381,7 @@ Func patch_lamannia()
 	;$py_handle = Run("ddolauncher.exe -p -g " & $lamannia_folder)
 	GUICtrlSetData($patch_edit, @CRLF & "***Starting Patch Process***")
 	$tempstring = 'ddolauncher.exe -p -g "' & $lamannia_folder & '"'
-	If $debug == 1 Or $debug == 2 Then 
+	If $debug > 0 Then 
 		$tempstring = $tempstring & ' -d ' & $debug
 		_FileWriteLog("debug.txt", $tempstring)
 	EndIf
@@ -528,3 +532,21 @@ Func _CreateMSXMLObj() ; Creates a MSXML instance depending on the version insta
 
 	Return 0
 EndFunc   ;==>_CreateMSXMLObj
+
+Func _MyErrFunc()
+;~ 					"description: "    & $oErrObj.description
+;~ 					"windescription: " & $oErrObj.windescription
+;~ 					"lastdllerror: "   & $oErrObj.lastdllerror
+;~ 					"scriptline: "     & $oErrObj.scriptline
+;~ 					"number: "         & Hex($oErrObj.number,8)
+;~ 					"source: "         & $oErrObj.source
+;~ 					"helpfile: "       & $oErrObj.helpfile
+;~ 					"helpcontext: "    & $oErrObj.helpcontext
+	If $debug>0 Then
+		$msg = "DDO-ML "
+		If $oErrObj.scriptline > -1 Then $msg &= "Line: " & $oErrObj.scriptline & ", "
+		$msg &= "ERROR " & Hex($oErrObj.number,8)  & ": " & $oErrObj.description
+		_FileWriteLog("ddolauncher.txt", $msg)
+	EndIf
+	Seterror(1)
+EndFunc   ;==>_MyErrFunc

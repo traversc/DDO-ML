@@ -5,7 +5,7 @@
 #AutoIt3Wrapper_Change2CUI=y
 #AutoIt3Wrapper_Res_Comment=Original: Copyright 2012 by Florian Stinglmayr (Website: http://github/n0la/ddolauncher)
 #AutoIt3Wrapper_Res_Description=An alternate DDO launcher
-#AutoIt3Wrapper_Res_Fileversion=1.0.4.0
+#AutoIt3Wrapper_Res_Fileversion=1.0.5.0
 #AutoIt3Wrapper_Res_LegalCopyright=AutoIt port from Python by: MIvanIsten (https://github.com/MIvanIsten)
 #AutoIt3Wrapper_Res_Field=ProductName|DDO-ML
 #AutoIt3Wrapper_Run_Au3Stripper=y
@@ -73,8 +73,7 @@ If $ddogamedir == "" Then
 	Exit 1
 EndIf
 
-$exe = $ddogamedir & "\\dndclient.exe"
-If Not FileExists($exe) Then
+If Not FileExists($ddogamedir & "\\TurbineLauncher.exe.config") Then
 	ConsoleWriteError('Your DDO game directory "' & $ddogamedir & '" does not appear to be right.' & @CRLF)
 	ConsoleWriteError("Try specifying your full absolute path to DDO through the -g option." & @CRLF)
 	Exit 1
@@ -98,7 +97,11 @@ If IsArray($config) Then
 	$worlds = $config[3]
 EndIf
 
-$LoginQueueURL = query_queue_url($configserver)
+$config = query_queue_url($configserver)
+If IsArray($config) Then
+	$LoginQueueURL = $config[0]
+	$exe = $config[1]
+EndIf
 
 If $debug > 0 Then 
 	_FileWriteLog("ddolauncher.txt", "ddogamedir: " & $ddogamedir & @CRLF)
@@ -165,7 +168,7 @@ $login_result = login($authserver, $world, $user, $pass, $subscription, $gamenam
 If UBound($selectedworlds) == 0 Then
 	ConsoleWriteError("Login of " & $user & " failed. Wrong password?")
 Else
-	run_ddo($ddogamedir, $login_result[0], $login_result[1], $language, $world, $gamename, $authserver, $outport)
+	run_ddo($exe, $login_result[0], $login_result[1], $language, $world, $gamename, $authserver, $outport)
 EndIf
 
 ;===============================================================================
@@ -180,10 +183,10 @@ Func _GetVersion()
 	EndIf
 EndFunc   ;==>_GetVersion
 
-Func run_ddo($gamedir, $username, $ticket, $language, $world, $gamename, $authserver, $outport)
+Func run_ddo($exename, $username, $ticket, $language, $world, $gamename, $authserver, $outport)
 	Local $params[0]
 
-	_ArrayAdd($params, "dndclient.exe")
+	_ArrayAdd($params, $exename)
 	_ArrayAdd($params, "-h")
 	_ArrayAdd($params, $world[1])
 	_ArrayAdd($params, "-a")
@@ -340,7 +343,8 @@ Func login($authserver, $world, $username, $password, $subscription, $gamename, 
 EndFunc   ;==>login
 
 Func query_queue_url($configserver)
-	Local $url = ""
+	Local $config[2] = ["", ""]
+	Local $legacy = @OSVersion=="WIN_VISTA" ? "Legacy" : ""
 
 	$oXML = _CreateMSXMLObj(1)
 	If Not IsObj($oXML) Then
@@ -366,9 +370,10 @@ Func query_queue_url($configserver)
 		_FileWriteLog("ddolauncher.txt", "query_queue_url: " & $oXML.responseXML.xml & @CRLF)
 	EndIf
 
-	$url = $oXML.responseXML.selectSingleNode('//appSettings/add[@key = "WorldQueue.LoginQueue.URL"]').getAttribute("value")
+	$config[0] = $oXML.responseXML.selectSingleNode('//appSettings/add[@key = "WorldQueue.LoginQueue.URL"]').getAttribute("value")
+	$config[1] = $oXML.responseXML.selectSingleNode('//appSettings/add[@key = "GameClient.WIN32' & $legacy & '.Filename"]').getAttribute("value")
 
-	Return $url
+	Return $config
 EndFunc   ;==>query_queue_url
 
 Func get_config_data($basepath)

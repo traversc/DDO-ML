@@ -1,9 +1,8 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=icon.ico
 #AutoIt3Wrapper_Outfile=..\DDO-ML.exe
-#AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=An alternate DDO launcher
-#AutoIt3Wrapper_Res_Fileversion=1.4.4.0
+#AutoIt3Wrapper_Res_Fileversion=1.5.0.0
 #AutoIt3Wrapper_Res_Field=ProductName|DDO-ML
 #AutoIt3Wrapper_Run_Au3Stripper=y
 #Au3Stripper_Parameters=/rsln /mo
@@ -126,6 +125,7 @@ $exit_item = TrayCreateItem("Exit")
 TrayItemSetOnEvent(-1, "_exit")
 Func _exit()
 	If $gui <> 0 Then
+		_WinAPI_ShowWindow($gui,@SW_SHOWNORMAL)
 		$pos = WinGetPos($gui)
 		IniWrite($ini_file, "startup", "x", $pos[0])
 		IniWrite($ini_file, "startup", "y", $pos[1])
@@ -234,18 +234,16 @@ Func launch()
 	Dim $rename[$acc_count]
 	Dim $pid[$acc_count]
 	Dim $character[$acc_count]
+	Dim $preferencesFile[$acc_count]
 	For $acc = 1 To $acc_count Step 1
 		$user = _xmlGetattrib("shortcut[" & $i & "]/account[" & $acc & "]", "user")
 		$pass = _xmlGetattrib("shortcut[" & $i & "]/account[" & $acc & "]/pass", "value")
 		$subscription = _xmlGetattrib("shortcut[" & $i & "]/account[" & $acc & "]/subscription", "value")
-		If @error Then
-			$subscription = ""
-		EndIf
+		If $subscription == -1 Then $subscription = ""
 
 		If $pass == "" Then
 			$pass = _xmlGetattrib("shortcut[" & $i & "]/account[" & $acc & "]/pass", "encrypted_value")
-			$pass = _HexToString($pass)
-			$pass = _Crypt_DecryptData($pass, $ckey, $CALG_AES_256)
+			$pass = _Crypt_DecryptData("0x" & $pass, $ckey, $CALG_AES_256)
 			;consolewrite($pass & @CRLF)
 			$pass = BinaryToString($pass)
 			;consolewrite($pass)
@@ -262,7 +260,11 @@ Func launch()
 		EndIf
 
 		$rename[$acc - 1] = _xmlGetattrib("shortcut[" & $i & "]/account[" & $acc & "]/rename", "value")
+		If $rename[$acc - 1] == -1 Then $rename[$acc - 1] = ""
 		$character[$acc - 1] = _xmlGetattrib("shortcut[" & $i & "]/account[" & $acc & "]/character", "value")
+		If $character[$acc - 1] == -1 Then $character[$acc - 1] = ""
+		$preferencesFile[$acc - 1] = _xmlGetattrib("shortcut[" & $i & "]/account[" & $acc & "]/preferencesFile", "value")
+		If $preferencesFile[$acc - 1] == -1 Then $preferencesFile[$acc - 1] = ""
 		$tempstring = 'ddolauncher.exe' & ' -s ' & $server & ' -g "' & $ddo_folder & '" -u "' & $user & '" -a "' & $pass & '" -z "' & $subscription & '"'
 
 		If $debug > 0 Then 
@@ -289,8 +291,6 @@ Func launch()
 			If @error Then ExitLoop
 			MsgBox($MB_ICONERROR, "ddolauncher.exe", $py_out[$acc - 1])
 		WEnd
-
-		If $debug > 0 Then _FileWriteLog("debug.txt", $py_out[$acc - 1])
 	Next
 
 	If $background_launch == 1 Then
@@ -299,13 +299,18 @@ Func launch()
 		WinSetOnTop($active, "", 1)
 	EndIf
 	For $acc = 1 To $acc_count Step 1
-		If Not StringInStr($py_out[$acc - 1], "dndclient.exe") Then
+		If Not StringInStr($py_out[$acc - 1], "dndclient") Then
 			_GUICtrlListView_SetColumn($sList, 0, "Error " & $user)
+			If $debug > 0 Then _FileWriteLog("debug.txt", $py_out[$acc - 1])
 			Return
 		Else
 			If $character[$acc - 1] <> "" Then
 				$py_out[$acc - 1] = $py_out[$acc - 1] & " -u " & $character[$acc - 1]
 			EndIf
+			If $preferencesFile[$acc - 1] <> "" Then
+				$py_out[$acc - 1] = $py_out[$acc - 1] & ' --prefs "' & $preferencesFile[$acc - 1] & '"'
+			EndIf
+			If $debug > 0 Then _FileWriteLog("debug.txt", $py_out[$acc - 1])
 			If $preload == 1 Then
 				_GUICtrlListView_SetColumn($sList, 0, "Preloading ...")
 				; _FileWriteLog ( "debug.txt", "preload.exe" & ' "' & $ddo_folder & "\\client_general.dat" & '"'& ' "' & $ddo_folder & "\\client_gamelogic.dat" & '"')
@@ -313,7 +318,9 @@ Func launch()
 			EndIf
 			_GUICtrlListView_SetColumn($sList, 0, "Launching client " & $user)
 			$pid = Run($ddo_folder & "\\" & $py_out[$acc - 1], $ddo_folder)
-			Run('ddoclient_wrapper.exe' & ' ' & $pid & ' "' & $rename[$acc - 1] & '"')
+			If $rename[$acc - 1] <> "" Then
+				Run('ddoclient_wrapper.exe' & ' ' & $pid & ' "' & $rename[$acc - 1] & '"')
+			EndIf
 		EndIf
 	Next
 	If $background_launch == 1 Then

@@ -1,11 +1,10 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=icon.ico
 #AutoIt3Wrapper_Outfile=..\ddolauncher.exe
-#AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Change2CUI=y
 #AutoIt3Wrapper_Res_Comment=Original: Copyright 2012 by Florian Stinglmayr (Website: http://github/n0la/ddolauncher)
 #AutoIt3Wrapper_Res_Description=An alternate DDO launcher
-#AutoIt3Wrapper_Res_Fileversion=1.0.5.1
+#AutoIt3Wrapper_Res_Fileversion=1.5.0.0
 #AutoIt3Wrapper_Res_LegalCopyright=AutoIt port from Python by: MIvanIsten (https://github.com/MIvanIsten)
 #AutoIt3Wrapper_Res_Field=ProductName|DDO-ML
 #AutoIt3Wrapper_Run_Au3Stripper=y
@@ -15,6 +14,8 @@
 	[FileVersion]
 #ce
 #include <File.au3>
+#include <APIShellExConstants.au3>
+#include <WinAPIShellEx.au3>
 
 $oErrObj = ObjEvent("AutoIt.Error","_MyErrFunc")
 $debug = 0
@@ -344,8 +345,8 @@ EndFunc   ;==>login
 
 Func query_queue_url($configserver)
 	Local $config[2] = ["", ""]
-	Local $legacy = @OSVersion=="WIN_VISTA" ? "Legacy" : ""
-
+	Local $exeType = IniRead(_WinAPI_ShellGetSpecialFolderPath($CSIDL_PERSONAL)&"\Dungeons and Dragons Online\UserPreferences.ini", "Launcher", "GameClientType", "1")
+	
 	$oXML = _CreateMSXMLObj(1)
 	If Not IsObj($oXML) Then
 		ConsoleWriteError("_CreateMSXMLObj(1) ERROR!: Unable to create MSXML Object!!" & @CRLF)
@@ -371,7 +372,10 @@ Func query_queue_url($configserver)
 	EndIf
 
 	$config[0] = $oXML.responseXML.selectSingleNode('//appSettings/add[@key = "WorldQueue.LoginQueue.URL"]').getAttribute("value")
-	$config[1] = $oXML.responseXML.selectSingleNode('//appSettings/add[@key = "GameClient.WIN32' & $legacy & '.Filename"]').getAttribute("value")
+	$config[1] = $oXML.responseXML.selectSingleNode('//appSettings/add[@key = "GameClient.WIN' & ($exeType == 3 ? "64":"32") & ($exeType == 2 ? "Legacy":"") & '.Filename"]').getAttribute("value")
+	if $exeType == 3 Then
+		$config[1] = "x64\" & $config[1]
+	EndIf
 
 	Return $config
 EndFunc   ;==>query_queue_url

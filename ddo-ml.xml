@@ -6,6 +6,7 @@
 			<rename value="DDO_acc1"></rename>
 			<character value="ToonName"></character>
 			<subscription value="SubName"></subscription>
+			<preferencesFile value="c:\Users\{UserName}\Documents\Dungeons and Dragons Online\{FileName}"></preferencesFile>
 		</account>
 	</shortcut>
 	<shortcut label="Acc2">

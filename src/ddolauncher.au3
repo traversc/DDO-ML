@@ -4,7 +4,7 @@
 #AutoIt3Wrapper_Change2CUI=y
 #AutoIt3Wrapper_Res_Comment=Original: Copyright 2012 by Florian Stinglmayr (Website: http://github/n0la/ddolauncher)
 #AutoIt3Wrapper_Res_Description=An alternate DDO launcher
-#AutoIt3Wrapper_Res_Fileversion=1.5.0.0
+#AutoIt3Wrapper_Res_Fileversion=1.5.1.0
 #AutoIt3Wrapper_Res_LegalCopyright=AutoIt port from Python by: MIvanIsten (https://github.com/MIvanIsten)
 #AutoIt3Wrapper_Res_Field=ProductName|DDO-ML
 #AutoIt3Wrapper_Run_Au3Stripper=y
@@ -29,6 +29,7 @@ $patch = 0
 $ddogamedir = ""
 $exe = ""
 $outport = 0
+$launcherConfig = ""
 
 If $CmdLine[0] > 0 Then
 	For $i = 1 To $CmdLine[0]
@@ -74,9 +75,15 @@ If $ddogamedir == "" Then
 	Exit 1
 EndIf
 
-If Not FileExists($ddogamedir & "\\TurbineLauncher.exe.config") Then
+If FileExists($ddogamedir & "\\TurbineLauncher.exe.config") Then
+	$launcherConfig = "TurbineLauncher.exe.config"
+Elseif FileExists($ddogamedir & "\\ddo.launcherconfig") Then
+	$launcherConfig = "ddo.launcherconfig"
+EndIf
+
+If Not $launcherConfig Then
 	ConsoleWriteError('Your DDO game directory "' & $ddogamedir & '" does not appear to be right.' & @CRLF)
-	ConsoleWriteError("Try specifying your full absolute path to DDO through the -g option." & @CRLF)
+	ConsoleWriteError("Make sure you have 'TurbineLauncher.exe.config' or 'ddo.launcherconfig' in it." & @CRLF)
 	Exit 1
 EndIf
 
@@ -383,8 +390,7 @@ EndFunc   ;==>query_queue_url
 Func get_config_data($basepath)
 	Local $config[2] = ["", ""]
 
-	$filename = "TurbineLauncher.exe.config"
-	$path = $basepath & "\" & $filename
+	$path = $basepath & "\" & $launcherConfig
 
 	$oXML = _CreateMSXMLObj(0)
 	If Not IsObj($oXML) Then

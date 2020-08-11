@@ -4,7 +4,7 @@
 #AutoIt3Wrapper_Change2CUI=y
 #AutoIt3Wrapper_Res_Comment=Original: Copyright 2012 by Florian Stinglmayr (Website: http://github/n0la/ddolauncher)
 #AutoIt3Wrapper_Res_Description=An alternate DDO launcher
-#AutoIt3Wrapper_Res_Fileversion=1.5.1.0
+#AutoIt3Wrapper_Res_Fileversion=1.5.2.0
 #AutoIt3Wrapper_Res_LegalCopyright=AutoIt port from Python by: MIvanIsten (https://github.com/MIvanIsten)
 #AutoIt3Wrapper_Res_Field=ProductName|DDO-ML
 #AutoIt3Wrapper_Run_Au3Stripper=y
@@ -438,7 +438,7 @@ Func query_host($world)
 		_FileWriteLog("ddolauncher.txt", "query_host: " & $oXML.responseXML.xml & @CRLF)
 	EndIf
 
-	If IsObj($oXML.responseXML) Then
+	If IsObj($oXML.responseXML) And $oXML.responseXML.hasChildNodes() Then
 		$hosts = StringSplit($oXML.responseXML.selectSingleNode("//loginservers").text, ";")
 		$world[1] = $hosts[1]
 		$queueurls = StringSplit($oXML.responseXML.selectSingleNode("//queueurls").text, ";")

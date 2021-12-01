@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=icon.ico
 #AutoIt3Wrapper_Outfile=..\DDO-ML.exe
 #AutoIt3Wrapper_Res_Description=An alternate DDO launcher
-#AutoIt3Wrapper_Res_Fileversion=1.5.2.0
+#AutoIt3Wrapper_Res_Fileversion=1.5.3.0
 #AutoIt3Wrapper_Res_Field=ProductName|DDO-ML
 #AutoIt3Wrapper_Run_Au3Stripper=y
 #Au3Stripper_Parameters=/rsln /mo
@@ -266,8 +266,11 @@ Func launch()
 		$preferencesFile[$acc - 1] = _xmlGetattrib("shortcut[" & $i & "]/account[" & $acc & "]/preferencesFile", "value")
 		If $preferencesFile[$acc - 1] == -1 Then $preferencesFile[$acc - 1] = ""
 		$tempstring = 'ddolauncher.exe' & ' -s ' & $server & ' -g "' & $ddo_folder & '" -u "' & $user & '" -a "' & $pass & '" -z "' & $subscription & '"'
+		If $preferencesFile[$acc - 1] <> "" Then
+			$tempstring &= ' -i "' & $preferencesFile[$acc - 1] & '"'
+		EndIf
 
-		If $debug > 0 Then 
+		If $debug > 0 Then
 			$tempstring = $tempstring & ' -d ' & $debug
 			_FileWriteLog("debug.txt", $tempstring)
 		EndIf
@@ -312,9 +315,12 @@ Func launch()
 			EndIf
 			If $debug > 0 Then _FileWriteLog("debug.txt", $py_out[$acc - 1])
 			If $preload == 1 Then
-				_GUICtrlListView_SetColumn($sList, 0, "Preloading ...")
-				; _FileWriteLog ( "debug.txt", "preload.exe" & ' "' & $ddo_folder & "\\client_general.dat" & '"'& ' "' & $ddo_folder & "\\client_gamelogic.dat" & '"')
-				RunWait("preload.exe" & ' "' & $ddo_folder & "\\client_general.dat" & '"' & ' "' & $ddo_folder & "\\client_gamelogic.dat" & '"', @WorkingDir, @SW_HIDE)
+				If $debug > 0 Then _FileWriteLog("debug.txt", "Preloading start")
+				Preload_data($ddo_folder)
+				If $debug > 0 Then _FileWriteLog("debug.txt", "Preloading done")
+;				_GUICtrlListView_SetColumn($sList, 0, "Preloading ...")
+;				; _FileWriteLog ( "debug.txt", "preload.exe" & ' "' & $ddo_folder & "\\client_general.dat" & '"'& ' "' & $ddo_folder & "\\client_gamelogic.dat" & '"')
+;				RunWait("preload.exe" & ' "' & $ddo_folder & "\\client_general.dat" & '"' & ' "' & $ddo_folder & "\\client_gamelogic.dat" & '"', @WorkingDir, @SW_HIDE)
 			EndIf
 			_GUICtrlListView_SetColumn($sList, 0, "Launching client " & $user)
 			$pid = Run($ddo_folder & "\\" & $py_out[$acc - 1], $ddo_folder)
@@ -358,7 +364,6 @@ Func patch_game()
 	$patch_gui = GUICreate("Patch Window", 400, 300)
 	$patch_edit = GUICtrlCreateEdit("", 0, 0, 400, 300)
 	GUISetState(@SW_SHOW)
-	;$py_handle = Run("ddolauncher.exe -p -g " & $default_folder)
 	GUICtrlSetData($patch_edit, @CRLF & "***Starting Patch Process***")
 	$tempstring = 'ddolauncher.exe -p -g "' & $default_folder & '"'
 	If $debug == 1 Or $debug == 2 Then
@@ -382,13 +387,18 @@ Func patch_lamannia()
 		set_lamannia_directory()
 	EndIf
 
+	$preferencesFile = _xmlGetattrib('serverConfig/Lamannia/preferencesFile', "value")
+	If $preferencesFile == -1 Then $preferencesFile = ""
+
 	$lamannia_patch_gui = GUICreate("Lamannia Patch Window", 400, 300)
 	$patch_edit = GUICtrlCreateEdit("", 0, 0, 400, 300)
 	GUISetState(@SW_SHOW)
-	;$py_handle = Run("ddolauncher.exe -p -g " & $lamannia_folder)
 	GUICtrlSetData($patch_edit, @CRLF & "***Starting Patch Process***")
 	$tempstring = 'ddolauncher.exe -p -g "' & $lamannia_folder & '"'
-	If $debug > 0 Then 
+	If $preferencesFile <> "" Then
+		$tempstring &= ' -i "' & $preferencesFile & '"'
+	EndIf
+	If $debug > 0 Then
 		$tempstring = $tempstring & ' -d ' & $debug
 		_FileWriteLog("debug.txt", $tempstring)
 	EndIf
@@ -506,7 +516,7 @@ Func encrypt()
 
 	$root = $oXML.documentElement
 
-	For $shortcut In $root.childNodes
+	For $shortcut In $root.selectNodes("//shortcut")
 		For $account In $shortcut.childNodes
 			$pass = $account.selectsinglenode("pass")
 			$pass_value = $pass.getAttribute("value")
@@ -557,3 +567,52 @@ Func _MyErrFunc()
 	EndIf
 	Seterror(1)
 EndFunc   ;==>_MyErrFunc
+
+Func Preload_data($sPath)
+	Const $iChunkSize = 0x20000
+
+	$hFile1 = FileOpen($sPath & "\client_local_English.dat", $FO_BINARY)
+	$hFile2 = FileOpen($sPath & "\client_general.dat", $FO_BINARY)
+	$hFile3 = FileOpen($sPath & "\client_gamelogic.dat", $FO_BINARY)
+	$iSize1 = FileSize($hFile1)
+	$iSize2 = FileSize($hFile2)
+	$iSize3 = FileSize($hFile3)
+	$iCurPos = 0
+	$iTotal = $iSize1 + $iSize2 + $iSize3
+	$iCurPos = PreloadFile($hFile1, $iSize1, $iCurPos, $iTotal, $iChunkSize)
+	$iCurPos = PreloadFile($hFile2, $iSize2, $iCurPos, $iTotal, $iChunkSize)
+	$iCurPos = PreloadFile($hFile3, $iSize3, $iCurPos, $iTotal, $iChunkSize)
+EndFunc   ;==>Preload_data
+
+Func FileSize($hFile)
+	$iSize = 0
+	If $hFile <> -1 Then
+		FileSetPos($hFile, 0, $FILE_END)
+		$iSize = FileGetPos($hFile)
+		FileSetPos($hFile, 0, $FILE_BEGIN)
+	EndIf
+	Return $iSize
+EndFunc   ;==>FileSize
+
+Func PreloadFile($hFile, $iSize, $iCurPos, $iTotal, $iChunkSize)
+	If $hFile <> -1 Then
+		$iPerc = Int($iCurPos / $iTotal * 100)
+		Do
+			$iReadSize = $iSize > $iChunkSize ? $iChunkSize : $iSize
+			$iSize -= $iReadSize
+			$iCurPos += $iReadSize
+			$dBuff = FileRead($hFile, $iReadSize)
+			If @error Then
+				MsgBox(0, "Error", "Read error while preloading. Aborting.", 0)
+				Exit 1
+			EndIf
+			$iNewPerc = Int($iCurPos / $iTotal * 100)
+			If $iNewPerc <> $iPerc Then
+				$iPerc = $iNewPerc
+				_GUICtrlListView_SetColumn($sList, 0, "Preloading " & $iPerc & "%" )
+			EndIf
+		Until $iSize = 0
+		FileClose($hFile)
+	EndIf
+	Return $iCurPos
+EndFunc   ;==>PreloadFile

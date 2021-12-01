@@ -4,9 +4,10 @@
 #AutoIt3Wrapper_Change2CUI=y
 #AutoIt3Wrapper_Res_Comment=Original: Copyright 2012 by Florian Stinglmayr (Website: http://github/n0la/ddolauncher)
 #AutoIt3Wrapper_Res_Description=An alternate DDO launcher
-#AutoIt3Wrapper_Res_Fileversion=1.5.2.0
+#AutoIt3Wrapper_Res_Fileversion=1.5.3.0
 #AutoIt3Wrapper_Res_LegalCopyright=AutoIt port from Python by: MIvanIsten (https://github.com/MIvanIsten)
 #AutoIt3Wrapper_Res_Field=ProductName|DDO-ML
+#AutoIt3Wrapper_AU3Check_Stop_OnWarning=y
 #AutoIt3Wrapper_Run_Au3Stripper=y
 #Au3Stripper_Parameters=/rsln /mo
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
@@ -19,6 +20,8 @@
 
 $oErrObj = ObjEvent("AutoIt.Error","_MyErrFunc")
 $debug = 0
+$debugLog = "ddolauncher.txt"
+
 $server = ""
 $language = "English"
 $subscription = ""
@@ -30,6 +33,21 @@ $ddogamedir = ""
 $exe = ""
 $outport = 0
 $launcherConfig = ""
+$preferencesFile = _WinAPI_ShellGetSpecialFolderPath($CSIDL_PERSONAL)&"\Dungeons and Dragons Online\UserPreferences.ini"
+
+$datacenter = ""
+$gamename = ""
+
+$authserver = ""
+$patchserver = ""
+$configserver = ""
+Global $game_worlds[0]
+
+$GameVersion = ""
+$glsticketlifetime = 21600
+$LoginQueueURL = ""
+; $supporturl = ""         ; removed in Update 51.2
+; $supportserviceurl = ""  ; removed in Update 51.2
 
 If $CmdLine[0] > 0 Then
 	For $i = 1 To $CmdLine[0]
@@ -43,6 +61,9 @@ If $CmdLine[0] > 0 Then
 			Case $CmdLine[$i] == "-a" Or $CmdLine[$i] == "--pass"
 				$i = $i + 1
 				$pass = $CmdLine[$i]
+			Case $CmdLine[$i] == "-i" Or $CmdLine[$i] == "--preferences-file"
+				$i = $i + 1
+				$preferencesFile = $CmdLine[$i]
 			Case $CmdLine[$i] == "-h" Or $CmdLine[$i] == "--help"
 				Usage()
 				Exit 0
@@ -75,10 +96,10 @@ If $ddogamedir == "" Then
 	Exit 1
 EndIf
 
-If FileExists($ddogamedir & "\\TurbineLauncher.exe.config") Then
-	$launcherConfig = "TurbineLauncher.exe.config"
-Elseif FileExists($ddogamedir & "\\ddo.launcherconfig") Then
+If FileExists($ddogamedir & "\\ddo.launcherconfig") Then
 	$launcherConfig = "ddo.launcherconfig"
+Elseif FileExists($ddogamedir & "\\TurbineLauncher.exe.config") Then
+	$launcherConfig = "TurbineLauncher.exe.config"
 EndIf
 
 If Not $launcherConfig Then
@@ -87,46 +108,36 @@ If Not $launcherConfig Then
 	Exit 1
 EndIf
 
-$config = get_config_data($ddogamedir)
-If IsArray($config) Then
-	$datacenter = $config[0]
-	$gamename = $config[1]
-EndIf
+get_config_data()
+
 If $datacenter == "" Or $gamename == "" Then
 	ConsoleWriteError("Failed to get data center!" & @CRLF)
 	Exit 1
 EndIf
 
-$config = query_worlds($datacenter, $gamename)
-If IsArray($config) Then
-	$authserver = $config[0]
-	$patchserver = $config[1]
-	$configserver = $config[2]
-	$worlds = $config[3]
-EndIf
+query_worlds()
+query_queue_url($configserver)
 
-$config = query_queue_url($configserver)
-If IsArray($config) Then
-	$LoginQueueURL = $config[0]
-	$exe = $config[1]
-EndIf
-
-If $debug > 0 Then 
-	_FileWriteLog("ddolauncher.txt", "ddogamedir: " & $ddogamedir & @CRLF)
-	_FileWriteLog("ddolauncher.txt", "exe: " & $exe & @CRLF)
-	_FileWriteLog("ddolauncher.txt", "user: " & $user & @CRLF)
-	_FileWriteLog("ddolauncher.txt", "pass: " & $pass & @CRLF)
-	_FileWriteLog("ddolauncher.txt", "listservers: " & $listservers & @CRLF)
-	_FileWriteLog("ddolauncher.txt", "patch: " & $patch & @CRLF)
-	_FileWriteLog("ddolauncher.txt", "server: " & $server & @CRLF)
-	_FileWriteLog("ddolauncher.txt", "subscription: " & $subscription & @CRLF)
-	_FileWriteLog("ddolauncher.txt", "outport: " & $outport & @CRLF)
-	_FileWriteLog("ddolauncher.txt", "datacenter: " & $datacenter & @CRLF)
-	_FileWriteLog("ddolauncher.txt", "gamename: " & $gamename & @CRLF)
-	_FileWriteLog("ddolauncher.txt", "$authserver: " & $authserver & @CRLF)
-	_FileWriteLog("ddolauncher.txt", "$patchserver: " & $patchserver & @CRLF)
-	_FileWriteLog("ddolauncher.txt", "$configserver: " & $configserver & @CRLF)
-	_FileWriteLog("ddolauncher.txt", "$LoginQueueURL: " & $LoginQueueURL & @CRLF)
+If $debug > 0 Then
+	_FileWriteLog($debugLog, "ddogamedir: " & $ddogamedir & @CRLF)
+	_FileWriteLog($debugLog, "exe: " & $exe & @CRLF)
+	_FileWriteLog($debugLog, "user: " & $user & @CRLF)
+	_FileWriteLog($debugLog, "pass: " & $pass & @CRLF)
+	_FileWriteLog($debugLog, "listservers: " & $listservers & @CRLF)
+	_FileWriteLog($debugLog, "patch: " & $patch & @CRLF)
+	_FileWriteLog($debugLog, "server: " & $server & @CRLF)
+	_FileWriteLog($debugLog, "subscription: " & $subscription & @CRLF)
+	_FileWriteLog($debugLog, "outport: " & $outport & @CRLF)
+	_FileWriteLog($debugLog, "datacenter: " & $datacenter & @CRLF)
+	_FileWriteLog($debugLog, "gamename: " & $gamename & @CRLF)
+	_FileWriteLog($debugLog, "$authserver: " & $authserver & @CRLF)
+	_FileWriteLog($debugLog, "$patchserver: " & $patchserver & @CRLF)
+	_FileWriteLog($debugLog, "$configserver: " & $configserver & @CRLF)
+	_FileWriteLog($debugLog, "$LoginQueueURL: " & $LoginQueueURL & @CRLF)
+	; _FileWriteLog($debugLog, "$supporturl: " & $supporturl & @CRLF)                ; removed in Update 51.2
+	; _FileWriteLog($debugLog, "$supportserviceurl: " & $supportserviceurl & @CRLF)  ; removed in Update 51.2
+	_FileWriteLog($debugLog, "$GameVersion: " & $GameVersion & @CRLF)
+	_FileWriteLog($debugLog, "$preferencesFile: " & $preferencesFile & @CRLF)
 EndIf
 
 If $patch == 1 Then
@@ -140,7 +151,7 @@ If $listservers == 1 Then
 	ConsoleWrite('Patch server:' & $patchserver & @CRLF)
 	ConsoleWrite('Config server:' & $configserver & @CRLF)
 	ConsoleWrite('LoginQueue.URL:' & $LoginQueueURL & @CRLF)
-	For $gw In $worlds
+	For $gw In $game_worlds
 		ConsoleWrite('Server "' & $gw[0] & '"' & @CRLF)
 		ConsoleWrite(" Login server:" & $gw[1] & @CRLF)
 		ConsoleWrite(" Chat server:" & $gw[2] & @CRLF)
@@ -153,7 +164,7 @@ EndIf
 
 Local $selectedworlds[0]
 Local $w[1]
-For $gw In $worlds
+For $gw In $game_worlds
 	If StringLower($server) == StringLower($gw[0]) Then
 		$w[0] = $gw
 		_ArrayAdd($selectedworlds, $w)
@@ -172,11 +183,11 @@ EndIf
 
 $world = query_host($selectedworlds[0])
 
-$login_result = login($authserver, $world, $user, $pass, $subscription, $gamename, $LoginQueueURL)
+$login_result = login()
 If UBound($selectedworlds) == 0 Then
 	ConsoleWriteError("Login of " & $user & " failed. Wrong password?")
 Else
-	run_ddo($exe, $login_result[0], $login_result[1], $language, $world, $gamename, $authserver, $outport)
+	run_ddo($login_result[0], $login_result[1])
 EndIf
 
 ;===============================================================================
@@ -191,10 +202,10 @@ Func _GetVersion()
 	EndIf
 EndFunc   ;==>_GetVersion
 
-Func run_ddo($exename, $username, $ticket, $language, $world, $gamename, $authserver, $outport)
+Func run_ddo($username, $ticket)
 	Local $params[0]
 
-	_ArrayAdd($params, $exename)
+	_ArrayAdd($params, $exe)
 	_ArrayAdd($params, "-h")
 	_ArrayAdd($params, $world[1])
 	_ArrayAdd($params, "-a")
@@ -202,21 +213,21 @@ Func run_ddo($exename, $username, $ticket, $language, $world, $gamename, $authse
 	_ArrayAdd($params, "--glsticketdirect")
 	_ArrayAdd($params, $ticket)
 	_ArrayAdd($params, "--chatserver")
-	_ArrayAdd($params, '"' & $world[2] & '"')
+	_ArrayAdd($params, $world[2])
 	_ArrayAdd($params, "--language")
 	_ArrayAdd($params, $language)
 	_ArrayAdd($params, "--rodat")
 	_ArrayAdd($params, "on")
 	_ArrayAdd($params, "--gametype")
 	_ArrayAdd($params, $gamename)
-	_ArrayAdd($params, "--supporturl")
-	_ArrayAdd($params, '"https://tss.turbine.com/TSSTrowser/trowser.aspx"')
-	_ArrayAdd($params, "--supportserviceurl")
-	_ArrayAdd($params, '"https://tss.turbine.com/TSSTrowser/SubmitTicket.asmx"')
+	; _ArrayAdd($params, "--supporturl")         ; removed in Update 51.2
+	; _ArrayAdd($params, $supporturl)            ; removed in Update 51.2
+	; _ArrayAdd($params, "--supportserviceurl")  ; removed in Update 51.2
+	; _ArrayAdd($params, $supportserviceurl)     ; removed in Update 51.2
 	_ArrayAdd($params, "--authserverurl")
-	_ArrayAdd($params, '"' & $authserver & '"')
+	_ArrayAdd($params, $authserver)
 	_ArrayAdd($params, "--glsticketlifetime")
-	_ArrayAdd($params, "21600")
+	_ArrayAdd($params, $glsticketlifetime)
 
 	If $outport Then
 		_ArrayAdd($params, "--outport")
@@ -252,8 +263,8 @@ Func join_queue($name, $ticket, $world, $LoginQueueURL)
 			Exit 3
 		EndIf
 
-		If $debug > 1 Then 
-			_FileWriteLog("ddolauncher.txt", "join_queue: " & $oXML.responseXML.xml & @CRLF)
+		If $debug > 1 Then
+			_FileWriteLog($debugLog, "join_queue: " & $oXML.responseXML.xml & @CRLF)
 		EndIf
 
 		$hresult = Dec(StringReplace($oXML.responseXML.selectSingleNode("//HResult").text, "0x", ""), 2)
@@ -273,7 +284,7 @@ Func join_queue($name, $ticket, $world, $LoginQueueURL)
 	WEnd
 EndFunc   ;==>join_queue
 
-Func login($authserver, $world, $username, $password, $subscription, $gamename, $LoginQueueURL)
+Func login()
 	Local $login_result[0]
 	Local $found_ddo = False
 
@@ -281,8 +292,8 @@ Func login($authserver, $world, $username, $password, $subscription, $gamename, 
 			'<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">' & _
 			'<soap:Body>' & _
 			'<LoginAccount xmlns="http://www.turbine.com/SE/GLS">' & _
-			'<username>' & $username & '</username>' & _
-			'<password>' & $password & '</password>' & _
+			'<username>' & $user & '</username>' & _
+			'<password>' & $pass & '</password>' & _
 			'<additionalInfo></additionalInfo>' & _
 			'</LoginAccount>' & _
 			'</soap:Body>' & _
@@ -293,7 +304,7 @@ Func login($authserver, $world, $username, $password, $subscription, $gamename, 
 		ConsoleWriteError("_CreateMSXMLObj(1) ERROR!: Unable to create MSXML Object!!" & @CRLF)
 		Exit 2
 	EndIf
-	
+
 	$oXML.setOption(2, 13056)
 	$oXML.Open("POST", $authserver, False)
 	$oXML.SetRequestHeader("Content-Type", "text/xml; charset=utf-8")
@@ -312,8 +323,8 @@ Func login($authserver, $world, $username, $password, $subscription, $gamename, 
 		Exit 2
 	EndIf
 
-	If $debug > 1 Then 
-		_FileWriteLog("ddolauncher.txt", "login: " & $oXML.responseXML.xml & @CRLF)
+	If $debug > 1 Then
+		_FileWriteLog($debugLog, "login: " & $oXML.responseXML.xml & @CRLF)
 	EndIf
 
 	$oReceived = $oXML.responseXML
@@ -352,8 +363,8 @@ EndFunc   ;==>login
 
 Func query_queue_url($configserver)
 	Local $config[2] = ["", ""]
-	Local $exeType = IniRead(_WinAPI_ShellGetSpecialFolderPath($CSIDL_PERSONAL)&"\Dungeons and Dragons Online\UserPreferences.ini", "Launcher", "GameClientType", "1")
-	
+	Local $exeType = IniRead($preferencesFile, "Launcher", "GameClientType", "1")
+
 	$oXML = _CreateMSXMLObj(1)
 	If Not IsObj($oXML) Then
 		ConsoleWriteError("_CreateMSXMLObj(1) ERROR!: Unable to create MSXML Object!!" & @CRLF)
@@ -374,23 +385,23 @@ Func query_queue_url($configserver)
 		Exit 2
 	EndIf
 
-	If $debug > 1 Then 
-		_FileWriteLog("ddolauncher.txt", "query_queue_url: " & $oXML.responseXML.xml & @CRLF)
+	If $debug > 1 Then
+		_FileWriteLog($debugLog, "query_queue_url: " & $oXML.responseXML.xml & @CRLF)
 	EndIf
 
-	$config[0] = $oXML.responseXML.selectSingleNode('//appSettings/add[@key = "WorldQueue.LoginQueue.URL"]').getAttribute("value")
-	$config[1] = $oXML.responseXML.selectSingleNode('//appSettings/add[@key = "GameClient.WIN' & ($exeType == 3 ? "64":"32") & ($exeType == 2 ? "Legacy":"") & '.Filename"]').getAttribute("value")
+	$GameVersion             = $oXML.responseXML.selectSingleNode('//appSettings/add[@key = "Game.Version"]').getAttribute("value")
+	$glsticketlifetime       = $oXML.responseXML.selectSingleNode('//appSettings/add[@key = "GameClient.Arg.glsticketlifetime"]').getAttribute("value")
+	$LoginQueueURL           = $oXML.responseXML.selectSingleNode('//appSettings/add[@key = "WorldQueue.LoginQueue.URL"]').getAttribute("value")
+	; $supporturl              = $oXML.responseXML.selectSingleNode('//appSettings/add[@key = "GameClient.Arg.supporturl"]').getAttribute("value")         ; removed in Update 51.2
+	; $supportserviceurl       = $oXML.responseXML.selectSingleNode('//appSettings/add[@key = "GameClient.Arg.supportserviceurl"]').getAttribute("value")  ; removed in Update 51.2
+	$exe                     = $oXML.responseXML.selectSingleNode('//appSettings/add[@key = "GameClient.WIN' & ($exeType == 3 ? "64":"32") & ($exeType == 2 ? "Legacy":"") & '.Filename"]').getAttribute("value")
 	if $exeType == 3 Then
-		$config[1] = "x64\" & $config[1]
+		$exe = "x64\" & $exe
 	EndIf
-
-	Return $config
 EndFunc   ;==>query_queue_url
 
-Func get_config_data($basepath)
-	Local $config[2] = ["", ""]
-
-	$path = $basepath & "\" & $launcherConfig
+Func get_config_data()
+	$path = $ddogamedir & "\" & $launcherConfig
 
 	$oXML = _CreateMSXMLObj(0)
 	If Not IsObj($oXML) Then
@@ -406,9 +417,9 @@ Func get_config_data($basepath)
 	EndIf
 
 	$root = $oXML.documentElement
-	$config[0] = $root.selectSingleNode('appSettings/add[@key = "Launcher.DataCenterService.GLS"]').getAttribute("value")
-	$config[1] = $root.selectSingleNode('appSettings/add[@key = "DataCenter.GameName"]').getAttribute("value")
-	Return $config
+
+	$datacenter = $root.selectSingleNode('appSettings/add[@key = "Launcher.DataCenterService.GLS"]').getAttribute("value")
+	$gamename = $root.selectSingleNode('appSettings/add[@key = "DataCenter.GameName"]').getAttribute("value")
 EndFunc   ;==>get_config_data
 
 Func query_host($world)
@@ -419,7 +430,7 @@ Func query_host($world)
 		ConsoleWriteError("_CreateMSXMLObj(1) ERROR!: Unable to create MSXML Object!!" & @CRLF)
 		Exit 2
 	EndIf
-	
+
 	$oXML.open("GET", $world[4], False)
 	$oXML.send()
 
@@ -434,8 +445,8 @@ Func query_host($world)
 		Exit 2
 	EndIf
 
-	If $debug > 1 Then 
-		_FileWriteLog("ddolauncher.txt", "query_host: " & $oXML.responseXML.xml & @CRLF)
+	If $debug > 1 Then
+		_FileWriteLog($debugLog, "query_host: " & $oXML.responseXML.xml & @CRLF)
 	EndIf
 
 	If IsObj($oXML.responseXML) And $oXML.responseXML.hasChildNodes() Then
@@ -452,18 +463,17 @@ Func query_host($world)
 	Return $world
 EndFunc   ;==>query_host
 
-Func query_worlds($url, $gamename)
+Func query_worlds()
 	Local $config[4] = ["", "", ""]
 	Local $w[6] = ["", "", "", "", "", ""]
 	Local $game_world[1]
-	Local $game_servers[0]
 
 	$oXML = _CreateMSXMLObj(1)
 	If Not IsObj($oXML) Then
 		ConsoleWriteError("_CreateMSXMLObj(1) ERROR!: Unable to create MSXML Object!!" & @CRLF)
 		Exit 2
 	EndIf
-	
+
 	$sPD = '<?xml version="1.0" encoding="utf-8"?>' & _
 			'<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">' & _
 			'<soap:Body>' & _
@@ -472,7 +482,7 @@ Func query_worlds($url, $gamename)
 			'</GetDatacenters>' & _
 			'</soap:Body>' & _
 			'</soap:Envelope>'
-	$oXML.Open("POST", $url, False)
+	$oXML.Open("POST", $datacenter, False)
 	$oXML.SetRequestHeader("Content-Type", "text/xml; charset=utf-8")
 	$oXML.SetRequestHeader("SOAPAction", "http://www.turbine.com/SE/GLS/GetDatacenters")
 	$oXML.SetRequestHeader("Content-Length", StringLen($sPD))
@@ -489,17 +499,17 @@ Func query_worlds($url, $gamename)
 		Exit 2
 	EndIf
 
-	If $debug > 1 Then 
-		_FileWriteLog("ddolauncher.txt", "query_worlds: " & $oXML.responseXML.xml & @CRLF)
+	If $debug > 1 Then
+		_FileWriteLog($debugLog, "query_worlds: " & $oXML.responseXML.xml & @CRLF)
 	EndIf
 
 	$oReceived = $oXML.responseXML
 	$datacenters = $oReceived.selectNodes("//GetDatacentersResult/*")
 	For $dc In $datacenters
 		If $gamename == $dc.selectSingleNode("Name").text Then
-			$config[0] = $dc.selectSingleNode('AuthServer').text
-			$config[1] = $dc.selectSingleNode('PatchServer').text
-			$config[2] = $dc.selectSingleNode('LauncherConfigurationServer').text
+			$authserver = $dc.selectSingleNode('AuthServer').text
+			$patchserver = $dc.selectSingleNode('PatchServer').text
+			$configserver = $dc.selectSingleNode('LauncherConfigurationServer').text
 			$worlds = $dc.selectNodes("Worlds/*")
 			For $world In $worlds
 				$w[0] = $world.selectSingleNode('Name').text
@@ -508,13 +518,10 @@ Func query_worlds($url, $gamename)
 				$w[3] = $world.selectSingleNode('Language').text
 				$w[4] = $world.selectSingleNode('StatusServerUrl').text
 				$game_world[0] = query_host($w)
-				_ArrayAdd($game_servers, $game_world)
+				_ArrayAdd($game_worlds, $game_world)
 			Next
-			$config[3] = $game_servers
 		EndIf
 	Next
-
-	Return $config
 EndFunc   ;==>query_worlds
 
 Func patch_game($gamedir, $patchserver, $language, $game)
@@ -576,7 +583,7 @@ Func _MyErrFunc()
 		If $oErrObj.scriptline > -1 Then $msg &= "Line: " & $oErrObj.scriptline & ", "
 		$msg &= "ERROR " & Hex($oErrObj.number,8)  & ": " & $oErrObj.description
 		ConsoleWriteError($msg)
-		_FileWriteLog("ddolauncher.txt", $msg)
+		_FileWriteLog($debugLog, $msg)
 	EndIf
 	Seterror(1)
 EndFunc   ;==>_MyErrFunc

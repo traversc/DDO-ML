@@ -10,6 +10,18 @@ DDO-ML is a fast, lightweight game launcher I built using ~~**_Python_ (networki
 This is a small GUI interace similar to PyLotro. It is derived from an excellent command line Python Launcher by Kahath, which you can find <a href="https://www.ddo.com/forums/showthread.php/382010-How-to-launch-DDO-from-command-line">here</a>.
 
 # Changelog:
+## [1.5.3.0] - 2020-12-01
+### Fixed
+- error caused by changes in configuration xml as of Update 51.2 
+
+### Added
+- preferences file support for lammania
+ (lamma has only 32 bit executable, you can create separate UserPreferences.ini files for lamma and normal servers, having executable set to 32 bit for lamma and 64 bit executable set for others, see sample ddo-ml.xml)
+
+### Changed
+- moved preloading from external executable into DDO-ML
+- prefer ddo.launcherconfig file over TurbineLauncher.exe.config
+
 ## [1.5.2.0] - 2020-08-11
 ### Fixed
 - App fails to work when any server is offline, even if its not the selected server.

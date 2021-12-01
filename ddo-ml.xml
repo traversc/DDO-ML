@@ -35,6 +35,12 @@
 			<rename value="DDO_Lamannia"></rename>
 			<character value=""></character>
 			<directory value="G:\\DDO - Lamannia"/>
+			<preferencesFile value="c:\Users\{UserName}\Documents\Dungeons and Dragons Online\LammaniaPreferences.ini"></preferencesFile>
 		</account>
 	</shortcut>
+	<serverConfig>
+		<Lamannia>
+			<preferencesFile value="c:\Users\{UserName}\Documents\Dungeons and Dragons Online\LammaniaPreferences.ini"></preferencesFile>
+		</Lamannia>
+	</serverConfig>
 </root>
